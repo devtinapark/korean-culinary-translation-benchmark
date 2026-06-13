@@ -62,7 +62,7 @@ BilingualRecipe
 python -m src.main
 
 # Single model
-python -m src.main --model anthropic/claude-3.7-sonnet
+python -m src.main --model anthropic/claude-sonnet-4.6
 
 # List configured models
 python -m src.main --list-models
