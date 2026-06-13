@@ -1,0 +1,48 @@
+metadata:
+  config_file: config.yaml
+  dataset: Korean Culinary ASR Transcripts
+  models_tested:
+  - anthropic/claude-sonnet-4.6
+  - google/gemini-2.5-pro
+  - qwen/qwen3-max-thinking
+  num_scenarios: 8
+rankings:
+- cer: 0.9350359295605216
+  cer_normalized: 0.7271145285972684
+  cer_wer_ratio: 0.0
+  composite_score: 0.7658458114389073
+  loanword_accuracy: 0.88821112246636
+  loanword_normalized: 1.0
+  model: google/gemini-2.5-pro
+  rank: 1
+  ratio_normalized: 0.5
+  samples_per_second: 0.02382544437031556
+  speed_normalized: 0.0
+  wer: 0.0
+  wer_normalized: 0.5
+- cer: 0.9149197317059762
+  cer_normalized: 1.0
+  cer_wer_ratio: 0.0
+  composite_score: 0.525
+  loanword_accuracy: 0.8351963038664623
+  loanword_normalized: 0.0
+  model: qwen/qwen3-max-thinking
+  rank: 2
+  ratio_normalized: 0.5
+  samples_per_second: 0.054645592494220616
+  speed_normalized: 1.0
+  wer: 0.0
+  wer_normalized: 0.5
+- cer: 0.9886363636363636
+  cer_normalized: 0.0
+  cer_wer_ratio: 0.0
+  composite_score: 0.4600301204819281
+  loanword_accuracy: 0.8859436211888946
+  loanword_normalized: 0.9572289156626518
+  model: anthropic/claude-sonnet-4.6
+  rank: 3
+  ratio_normalized: 0.5
+  samples_per_second: 0.031144513751880397
+  speed_normalized: 0.23747677500251665
+  wer: 0.0
+  wer_normalized: 0.5

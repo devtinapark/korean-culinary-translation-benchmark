@@ -86,10 +86,7 @@ class TranslationBenchmark:
             is_valid, completeness = self._validator.validate(recipe)
             loanword_score = self._loanword_scorer.score(scenario.text, recipe)
 
-            try:
-                cultural_score = self._judge.score(scenario.text, recipe) if recipe else 0
-            except NotImplementedError:
-                cultural_score = 0
+            cultural_score = self._judge.score(scenario.text, recipe) if recipe else 0
 
             results.append(ScenarioResult(
                 scenario_id=scenario.id,

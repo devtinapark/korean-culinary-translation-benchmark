@@ -1,10 +1,11 @@
 """
-LLM-as-a-Judge stub for cultural subtlety preservation scoring (1–5 scale).
+LLM-as-a-Judge for cultural subtlety preservation scoring (1–5 scale).
 
-To activate: implement _call_judge() using the template in its docstring,
-then set self.is_active = True and delegate score() to it.
+Requires OPENROUTER_API_KEY in environment and judge_model set in config.yaml.
 """
 from __future__ import annotations
+import os
+import openai
 from .schemas import BilingualRecipe
 
 JUDGE_RUBRIC = """\
@@ -30,49 +31,39 @@ class CulturalSubtletyJudge:
     """
     LLM-as-a-Judge scorer for cultural subtlety preservation.
 
-    Stub — returns NotImplementedError until wired to a live model.
-    The benchmark catches this and records cultural_score=0, which is
-    excluded from composite ranking until the judge is activated.
+    Active when model_id is set in config.yaml (judge_model key).
+    Falls back to 0 and logs a warning if model_id is None.
     """
 
     def __init__(self, model_id: str | None = None):
         self.model_id = model_id
-        self.is_active = False
-
-    def score(self, original_text: str, recipe: BilingualRecipe) -> int:
-        """
-        Score cultural subtlety preservation on a 1–5 scale.
-
-        Raises NotImplementedError until _call_judge() is implemented.
-        """
-        raise NotImplementedError(
-            "CulturalSubtletyJudge is not yet wired to a model. "
-            "Implement _call_judge() and set self.is_active = True to activate."
-        )
-
-    def _call_judge(self, original_text: str, recipe: BilingualRecipe) -> int:
-        """
-        Call the judge LLM and parse its 1–5 integer response.
-
-        Implementation template:
-            import openai, os
-            client = openai.OpenAI(
+        self.is_active = model_id is not None
+        if self.is_active:
+            self._client = openai.OpenAI(
                 api_key=os.environ["OPENROUTER_API_KEY"],
                 base_url="https://openrouter.ai/api/v1",
             )
-            prompt = JUDGE_RUBRIC.format(
-                original_text=original_text,
-                recipe_json=recipe.model_dump_json(indent=2),
-            )
-            resp = client.chat.completions.create(
-                model=self.model_id,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.0,
-                max_tokens=5,
-            )
-            raw = resp.choices[0].message.content.strip()
-            score = int(raw)
-            assert 1 <= score <= 5, f"Judge returned out-of-range score: {raw}"
-            return score
-        """
-        raise NotImplementedError
+
+    def score(self, original_text: str, recipe: BilingualRecipe) -> int:
+        """Score cultural subtlety preservation on a 1–5 scale."""
+        if not self.is_active:
+            return 0
+        return self._call_judge(original_text, recipe)
+
+    def _call_judge(self, original_text: str, recipe: BilingualRecipe) -> int:
+        """Call the judge LLM and parse its 1–5 integer response."""
+        prompt = JUDGE_RUBRIC.format(
+            original_text=original_text,
+            recipe_json=recipe.model_dump_json(indent=2),
+        )
+        resp = self._client.chat.completions.create(
+            model=self.model_id,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            max_tokens=5,
+        )
+        raw = resp.choices[0].message.content.strip()
+        score = int(raw)
+        if not 1 <= score <= 5:
+            raise ValueError(f"Judge returned out-of-range score: {raw!r}")
+        return score
