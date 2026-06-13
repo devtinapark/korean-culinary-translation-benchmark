@@ -60,8 +60,9 @@ class KonglishDetector:
         if custom_loanwords:
             self.loanwords.update(custom_loanwords)
 
-        # Pattern to detect English words
-        self.english_pattern = re.compile(r'\b[a-zA-Z]+\b')
+        # Match any Latin letter sequence — \b fails between Latin and Hangul
+        # in Python's Unicode regex because Hangul is also a \w character.
+        self.english_pattern = re.compile(r'[a-zA-Z]+')
 
         # Pattern to detect romanized Korean (rough heuristic)
         # This helps avoid false positives from romanization
