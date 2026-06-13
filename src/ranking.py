@@ -10,13 +10,17 @@ from dataclasses import dataclass
 @dataclass
 class RankingCriteria:
     """
-    Weights for multilingual API benchmark.
-    Speed and CER/WER ratio removed — speed measures API latency not model quality,
-    and CER/WER ratio is only meaningful for Korean-specific models.
+    Weights for the LLM translation benchmark.
+
+    Field names are kept stable for ModelRanker compatibility.
+    Semantic mapping (new → old slot):
+      cer_weight      → schema validity rate (40%)
+      wer_weight      → cultural subtlety score (25%)
+      loanword_weight → loanword preservation score (35%)
     """
-    cer_weight: float = 0.55      # Primary accuracy metric
-    wer_weight: float = 0.30      # Secondary accuracy metric
-    loanword_weight: float = 0.15  # Code-switching / mixed language accuracy
+    cer_weight: float = 0.40      # schema validity (higher is better)
+    wer_weight: float = 0.25      # cultural subtlety score (higher is better)
+    loanword_weight: float = 0.35  # Konglish / loanword preservation
     speed_weight: float = 0.0
     ratio_weight: float = 0.0
 
@@ -237,28 +241,35 @@ class ModelRanker:
             return
 
         print("\n" + "="*100)
-        print("MODEL RANKING - Korean ASR Benchmark".center(100))
+        print("MODEL RANKING - LLM Translation Benchmark".center(100))
         print("="*100)
 
         # Select columns to display
         display_cols = [
             'rank', 'model', 'composite_score', 'cer', 'wer',
-            'cer_wer_ratio', 'loanword_accuracy', 'samples_per_second'
+            'loanword_accuracy',
         ]
+        available_cols = [c for c in display_cols if c in ranked_df.columns]
 
         # Format for display
-        display_df = ranked_df[display_cols].copy()
+        display_df = ranked_df[available_cols].copy()
         display_df['composite_score'] = display_df['composite_score'].apply(lambda x: f"{x:.4f}")
         display_df['cer'] = display_df['cer'].apply(lambda x: f"{x:.4f}")
-        display_df['wer'] = display_df['wer'].apply(lambda x: f"{x:.4f}")
-        display_df['cer_wer_ratio'] = display_df['cer_wer_ratio'].apply(lambda x: f"{x:.2f}x")
+        display_df['wer'] = display_df['wer'].apply(lambda x: f"{x:.4f}" if x else "—")
         display_df['loanword_accuracy'] = display_df['loanword_accuracy'].apply(lambda x: f"{x:.4f}")
-        display_df['samples_per_second'] = display_df['samples_per_second'].apply(lambda x: f"{x:.2f}")
 
         # Rename columns for display
         display_df.columns = [
-            'Rank', 'Model', 'Score', 'CER', 'WER',
-            'CER/WER', 'Loanword Acc', 'Speed (s/s)'
+            c if c not in ('cer', 'wer', 'loanword_accuracy', 'composite_score', 'rank', 'model')
+            else {
+                'cer': 'Schema Valid',
+                'wer': 'Cultural Score',
+                'loanword_accuracy': 'Loanword Pres.',
+                'composite_score': 'Score',
+                'rank': 'Rank',
+                'model': 'Model',
+            }[c]
+            for c in display_df.columns
         ]
 
         print(display_df.to_string(index=False))
@@ -279,7 +290,7 @@ class ModelRanker:
             n: Number of models
         """
         print("\n" + "="*100)
-        print(f"TOP {n} MODELS FOR KOREAN KITCHEN ASR".center(100))
+        print(f"TOP {n} MODELS — LLM TRANSLATION BENCHMARK".center(100))
         print("="*100)
 
         for i, model_name in enumerate(top_models, 1):
@@ -287,21 +298,18 @@ class ModelRanker:
 
             print(f"\n{i}. {model_name}")
             print("-" * 80)
-            print(f"   Composite Score: {row['composite_score']:.4f}")
-            print(f"   CER: {row['cer']:.4f} | WER: {row['wer']:.4f} | Ratio: {row['cer_wer_ratio']:.2f}x")
-            print(f"   Loanword Accuracy: {row['loanword_accuracy']:.4f}")
-            print(f"   Speed: {row['samples_per_second']:.2f} samples/sec")
+            print(f"   Composite Score:   {row['composite_score']:.4f}")
+            print(f"   Schema Validity:   {row['cer']:.4f}")
+            print(f"   Cultural Score:    {row['wer']:.4f}")
+            print(f"   Loanword Preserv.: {row['loanword_accuracy']:.4f}")
 
-            # Add rationale
             strengths = []
             if row['cer_normalized'] > 0.7:
-                strengths.append("excellent CER")
+                strengths.append("high schema completeness")
             if row['loanword_normalized'] > 0.7:
-                strengths.append("strong loanword handling")
-            if row['speed_normalized'] > 0.7:
-                strengths.append("fast inference")
-            if row['ratio_normalized'] > 0.6:
-                strengths.append("good Korean characteristics")
+                strengths.append("strong Konglish preservation")
+            if row['wer_normalized'] > 0.7:
+                strengths.append("high cultural subtlety score")
 
             if strengths:
                 print(f"   Strengths: {', '.join(strengths)}")
