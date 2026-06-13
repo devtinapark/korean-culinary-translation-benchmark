@@ -22,6 +22,8 @@ class ScenarioResult:
     loanword_score: float
     cultural_score: int
     latency: float
+    prompt_tokens: int
+    completion_tokens: int
     raw_response: str | None
     parsed_recipe: BilingualRecipe | None
 
@@ -33,6 +35,9 @@ class BenchmarkResult:
     avg_loanword_score: float
     avg_cultural_score: float
     avg_latency: float
+    total_prompt_tokens: int
+    total_completion_tokens: int
+    cost_usd: float
     num_scenarios: int
     error: str | None = None
     per_scenario: list[ScenarioResult] = field(default_factory=list)
@@ -50,6 +55,9 @@ class BenchmarkResult:
             "loanword_accuracy": self.avg_loanword_score,    # already higher-is-better ✓
             "samples_per_second": 1.0 / self.avg_latency if self.avg_latency > 0 else 0.0,
             "cer_wer_ratio": 0.0,
+            "total_prompt_tokens": self.total_prompt_tokens,
+            "total_completion_tokens": self.total_completion_tokens,
+            "cost_usd": self.cost_usd,
             "error": self.error,
         }
 
@@ -71,6 +79,16 @@ class TranslationBenchmark:
         self._scenarios = self._loader.load()
         print(f"Loaded {len(self._scenarios)} text scenarios.")
 
+    def _model_pricing(self, model_id: str) -> tuple[float, float]:
+        """Return (price_per_million_input, price_per_million_output) for a model ID."""
+        for cfg in self._config.get("models", []):
+            if cfg["id"] == model_id:
+                return (
+                    cfg.get("price_per_million_input", 0.0),
+                    cfg.get("price_per_million_output", 0.0),
+                )
+        return 0.0, 0.0
+
     def evaluate_model(self, model_id: str) -> BenchmarkResult:
         if self._scenarios is None:
             self.setup_data()
@@ -80,12 +98,13 @@ class TranslationBenchmark:
 
         for scenario in self._scenarios:
             t0 = time.perf_counter()
-            recipe, raw = client.translate(scenario.text, scenario.language)
+            recipe, raw, prompt_tokens, completion_tokens = client.translate(
+                scenario.text, scenario.language
+            )
             latency = time.perf_counter() - t0
 
             is_valid, completeness = self._validator.validate(recipe)
             loanword_score = self._loanword_scorer.score(scenario.text, recipe)
-
             cultural_score = self._judge.score(scenario.text, recipe) if recipe else 0
 
             results.append(ScenarioResult(
@@ -97,21 +116,32 @@ class TranslationBenchmark:
                 loanword_score=loanword_score,
                 cultural_score=cultural_score,
                 latency=latency,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
                 raw_response=raw,
                 parsed_recipe=recipe,
             ))
             print(f"  [{scenario.id}] valid={is_valid} "
                   f"completeness={completeness:.2f} "
                   f"loanword={loanword_score:.2f} "
+                  f"tokens={prompt_tokens}+{completion_tokens} "
                   f"latency={latency:.2f}s")
 
         n = len(results)
+        total_prompt = sum(r.prompt_tokens for r in results)
+        total_completion = sum(r.completion_tokens for r in results)
+        price_in, price_out = self._model_pricing(model_id)
+        cost_usd = (total_prompt * price_in + total_completion * price_out) / 1_000_000
+
         return BenchmarkResult(
             model_name=model_id,
             avg_schema_validity=sum(r.schema_completeness for r in results) / n if n else 0.0,
             avg_loanword_score=sum(r.loanword_score for r in results) / n if n else 0.0,
             avg_cultural_score=sum(r.cultural_score for r in results) / n if n else 0.0,
             avg_latency=sum(r.latency for r in results) / n if n else 0.0,
+            total_prompt_tokens=total_prompt,
+            total_completion_tokens=total_completion,
+            cost_usd=cost_usd,
             num_scenarios=n,
             per_scenario=results,
         )
@@ -128,6 +158,8 @@ class TranslationBenchmark:
                 all_results[model_id] = result
                 print(f"  Schema validity: {result.avg_schema_validity:.3f} | "
                       f"Loanword score: {result.avg_loanword_score:.3f} | "
+                      f"Tokens: {result.total_prompt_tokens}+{result.total_completion_tokens} | "
+                      f"Cost: ${result.cost_usd:.4f} | "
                       f"Avg latency: {result.avg_latency:.2f}s")
             except Exception as exc:
                 all_results[model_id] = BenchmarkResult(
@@ -136,6 +168,9 @@ class TranslationBenchmark:
                     avg_loanword_score=0.0,
                     avg_cultural_score=0.0,
                     avg_latency=0.0,
+                    total_prompt_tokens=0,
+                    total_completion_tokens=0,
+                    cost_usd=0.0,
                     num_scenarios=0,
                     error=str(exc),
                 )
