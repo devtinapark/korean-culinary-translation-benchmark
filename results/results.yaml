@@ -1,0 +1,31 @@
+metadata:
+  config_file: config.yaml
+  dataset: Kitchen Audio Samples
+  num_samples: 8
+rankings:
+- cer: 0.05277329025309639
+  cer_normalized: 1.0
+  cer_wer_ratio: 2.1516494002181026
+  composite_score: 1.0
+  loanword_accuracy: 0.9741935483870968
+  loanword_normalized: 1.0
+  model: openai-gpt4o-transcribe
+  rank: 1
+  ratio_normalized: 0.0
+  samples_per_second: 0.24542624487356385
+  speed_normalized: 0.0
+  wer: 0.11354961832061068
+  wer_normalized: 1.0
+- cer: 0.07727517501346258
+  cer_normalized: 0.0
+  cer_wer_ratio: 2.309087161209671
+  composite_score: 0.0
+  loanword_accuracy: 0.9709677419354839
+  loanword_normalized: 0.0
+  model: deepgram-nova-3
+  rank: 2
+  ratio_normalized: 1.0
+  samples_per_second: 0.49348218202086985
+  speed_normalized: 1.0
+  wer: 0.1784351145038168
+  wer_normalized: 0.0

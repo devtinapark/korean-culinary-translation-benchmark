@@ -1,0 +1,40 @@
+# Multilingual ASR Benchmark — Kitchen Edition
+# Tests models that auto-detect mixed/code-switched language (EN, KO, ES, ZH)
+
+benchmark:
+  language: "multilingual"
+  device: "cpu"
+
+dataset:
+  audio_dir: "kitchen_samples/audio"
+  transcripts_dir: "kitchen_samples/transcriptions"
+  metadata_file: "kitchen_samples/metadata.json"
+
+# 2 models compared — all API-based, all auto-detect language, all handle code-switching
+# Pricing as of 2025-06 — update if rates change
+models:
+
+  openai-gpt4o-transcribe:
+    type: "api"
+    provider: "openai"
+    model: "gpt-4o-transcribe"
+    cost_per_minute: 0.006
+    # export OPENAI_API_KEY=your_key
+
+  deepgram-nova-3:
+    type: "api"
+    provider: "deepgram"
+    model: "nova-3"
+    cost_per_minute: 0.0052  # multilingual (detect_language=true) rate; English-only is $0.0043
+    # export DEEPGRAM_API_KEY=your_key
+
+
+metrics:
+  compute_cer: true
+  compute_wer: true
+  loanword_detection: true
+
+output:
+  results_dir: "results"
+  save_predictions: true
+  generate_report: true

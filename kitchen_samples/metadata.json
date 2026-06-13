@@ -1,0 +1,58 @@
+[
+  {
+    "id": "en-a-clean",
+    "audio_file": "English-A.MP3",
+    "transcript": "This is how I make soft eggs. My mother taught me but she never measured anything so I had to learn by watching. You boil the water first — a full boil, not just bubbles. Put the eggs in gently. I use a spoon. Cook for exactly six minutes. Six minutes for soft, eight for hard. But honestly — depends on the egg. Some eggs need a little more. While it cooks, make the sauce. Soy sauce, sesame oil, a little bit of sugar. How much? I just pour until it looks right. Maybe this much [gesture]. Green onion on top, very fine. When the egg is done, put it in cold water right away. This stops the cooking. Peel carefully — the soft ones break easily. My kids called these ‘mama eggs.’ Now my grandchildren call them the same thing. That’s the best part — the name travels with the recipe.",
+    "language": "en",
+    "noise": false
+  },
+  {
+    "id": "en-a-noise",
+    "audio_file": "English-A-with-noise.MP3",
+    "transcript": "This is how I make soft eggs. My mother taught me but she never measured anything so I had to learn by watching. You boil the water first — a full boil, not just bubbles. Put the eggs in gently. I use a spoon. Cook for exactly six minutes. Six minutes for soft, eight for hard. But honestly — depends on the egg. Some eggs need a little more. While it cooks, make the sauce. Soy sauce, sesame oil, a little bit of sugar. How much? I just pour until it looks right. Maybe this much [gesture]. Green onion on top, very fine. When the egg is done, put it in cold water right away. This stops the cooking. Peel carefully — the soft ones break easily. My kids called these ‘mama eggs.’ Now my grandchildren call them the same thing. That’s the best part — the name travels with the recipe.",
+    "language": "en",
+    "noise": true
+  },
+  {
+    "id": "en-b-clean",
+    "audio_file": "English-B.MP3",
+    "transcript": "Today I make 미역국 — miyeokguk. Seaweed soup. Korean people eat this on birthdays, after having a baby. It’s not just food — it means something. You need 미역, the dried seaweed. Soak it in cold water maybe twenty minutes. It gets very big — surprising how much it grows. For the broth, I use beef. Small pieces, stir-fried first with sesame oil and a little garlic. Until the meat changes color — you’ll know. Then add water. Lots of water. Now here’s the important part — you cannot add soy sauce too early. The seaweed gets tough. Add everything at the end. Salt, soy sauce, 간 맞추기 — seasoning to taste. That phrase doesn’t translate perfectly. It means keep tasting, keep adjusting, until it feels right in your body, not just your mouth. This soup my mother made every year on my birthday. Now I make it for my children. The recipe is simple but the meaning — 의미 — that’s what you’re really passing down.",
+    "language": "en",
+    "noise": false
+  },
+  {
+    "id": "en-b-noise",
+    "audio_file": "English-B-with-noise.MP3",
+    "transcript": "Today I make 미역국 — miyeokguk. Seaweed soup. Korean people eat this on birthdays, after having a baby. It’s not just food — it means something. You need 미역, the dried seaweed. Soak it in cold water maybe twenty minutes. It gets very big — surprising how much it grows. For the broth, I use beef. Small pieces, stir-fried first with sesame oil and a little garlic. Until the meat changes color — you’ll know. Then add water. Lots of water. Now here’s the important part — you cannot add soy sauce too early. The seaweed gets tough. Add everything at the end. Salt, soy sauce, 간 맞추기 — seasoning to taste. That phrase doesn’t translate perfectly. It means keep tasting, keep adjusting, until it feels right in your body, not just your mouth. This soup my mother made every year on my birthday. Now I make it for my children. The recipe is simple but the meaning — 의미 — that’s what you’re really passing down.",
+    "language": "en",
+    "noise": true
+  },
+  {
+    "id": "ko-a-clean",
+    "audio_file": "Korean-A.MP3",
+    "transcript": "오늘은 계란말이 만드는 법을 알려드릴게요. 저희 엄마 한테 배운 거예요. 진짜 간단한데 맛있어요. 달걀 세 개에 소금 한 꼬집 넣어주세요. 진짜 조금만요 - 간을 보면서 넣으시면 돼요. 당근이랑 파를 잘게 썰어 서 같이 넣어주시고요. 이만큼이요 [손가락으로 표시]. 너무 크면 말때 터져요. 프라이팬을 중불에 올리고 기름을 조금 둘러주세요. 저 는 참기름이랑 식용유를 반반 쓰는데요 - 저희 엄마가 그렇게 하셨거든요. 달걀물을 부어서 살살 저어주시다 가 반쯤 익으면 그때 말아주세요. 너무 익히시면 안 돼요 - 부드러워야 해요. 다 되셨으면 한 김 식히신 다음에 썰어주세요. 먹기 좋은 크기로요. 얼마나요? 그냥 드시기 좋은 만큼이면 돼요. 반찬으로도 좋고 도시락에도 잘 어울려요. 저희 아이들 어릴 때 맨날 해줬는데 지금도 생각난다고 하더라고요?",
+    "language": "ko",
+    "noise": false
+  },
+  {
+    "id": "ko-a-noise",
+    "audio_file": "Korean-A-with-noise.MP3",
+    "transcript": "오늘은 계란말이 만드는 법을 알려드릴게요. 저희 엄마 한테 배운 거예요. 진짜 간단한데 맛있어요. 달걀 세 개에 소금 한 꼬집 넣어주세요. 진짜 조금만요 - 간을 보면서 넣으시면 돼요. 당근이랑 파를 잘게 썰어 서 같이 넣어주시고요. 이만큼이요 [손가락으로 표시]. 너무 크면 말때 터져요. 프라이팬을 중불에 올리고 기름을 조금 둘러주세요. 저 는 참기름이랑 식용유를 반반 쓰는데요 - 저희 엄마가 그렇게 하셨거든요. 달걀물을 부어서 살살 저어주시다 가 반쯤 익으면 그때 말아주세요. 너무 익히시면 안 돼요 - 부드러워야 해요. 다 되셨으면 한 김 식히신 다음에 썰어주세요. 먹기 좋은 크기로요. 얼마나요? 그냥 드시기 좋은 만큼이면 돼요. 반찬으로도 좋고 도시락에도 잘 어울려요. 저희 아이들 어릴 때 맨날 해줬는데 지금도 생각난다고 하더라고요?",
+    "language": "ko",
+    "noise": true
+  },
+  {
+    "id": "ko-b-clean",
+    "audio_file": "Korean-B.MP3",
+    "transcript": "된장찌개는 그냥 레시피가 아니야. 우리 집 된장찌개는 우리 집 맛이 있어. 남의 집이랑 달라. 이게 손맛이야. 먼저 멸치 육수 내. 국물 멸치 한 줌 — 이 정도 [한 줌 표시] — 물에 넣고 끓이다가 멸치 건져. 이 국물이 기본이야. 육수 없으면 맛이 없어. 된장 두 큰술. 근데 우리 엄마 된장이랑 마트 된장이랑 달라. 우리 엄마는 직접 담궜거든. 그 맛을 마트 된장으로는 못 내. 최대한 비슷하게 하려면 — 그냥 좋은 된장 써. 알아서 골라. 두부, 애호박, 버섯 넣고. 고추도 하나. 청양고추 쓰면 매워 — 그냥 풋고추 써도 돼. 얼마나 맵게 먹고 싶냐에 따라. 마지막에 간 봐. 된장마다 염도가 달라서 — 레시피대로 하면 안 돼. 느낌으로 해야 해. 이게 요리야. 느낌. 엄마 손맛은 못 따라가. 근데 이게 제일 비슷한 것 같아. 그걸로 충분해.",
+    "language": "ko",
+    "noise": false
+  },
+  {
+    "id": "ko-b-noise",
+    "audio_file": "Korean-B-with-noise.MP3",
+    "transcript": "된장찌개는 그냥 레시피가 아니야. 우리 집 된장찌개는 우리 집 맛이 있어. 남의 집이랑 달라. 이게 손맛이야. 먼저 멸치 육수 내. 국물 멸치 한 줌 — 이 정도 [한 줌 표시] — 물에 넣고 끓이다가 멸치 건져. 이 국물이 기본이야. 육수 없으면 맛이 없어. 된장 두 큰술. 근데 우리 엄마 된장이랑 마트 된장이랑 달라. 우리 엄마는 직접 담궜거든. 그 맛을 마트 된장으로는 못 내. 최대한 비슷하게 하려면 — 그냥 좋은 된장 써. 알아서 골라. 두부, 애호박, 버섯 넣고. 고추도 하나. 청양고추 쓰면 매워 — 그냥 풋고추 써도 돼. 얼마나 맵게 먹고 싶냐에 따라. 마지막에 간 봐. 된장마다 염도가 달라서 — 레시피대로 하면 안 돼. 느낌으로 해야 해. 이게 요리야. 느낌. 엄마 손맛은 못 따라가. 근데 이게 제일 비슷한 것 같아. 그걸로 충분해.",
+    "language": "ko",
+    "noise": true
+  }
+]

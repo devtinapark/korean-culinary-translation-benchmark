@@ -1,0 +1,39 @@
+{
+  "metadata": {
+    "dataset": "Kitchen Audio Samples",
+    "num_samples": 8,
+    "config_file": "config.yaml"
+  },
+  "rankings": [
+    {
+      "rank": 1,
+      "model": "openai-gpt4o-transcribe",
+      "cer": 0.05277329025309639,
+      "wer": 0.11354961832061068,
+      "cer_wer_ratio": 2.1516494002181026,
+      "loanword_accuracy": 0.9741935483870968,
+      "samples_per_second": 0.24542624487356385,
+      "composite_score": 1.0,
+      "cer_normalized": 1.0,
+      "wer_normalized": 1.0,
+      "loanword_normalized": 1.0,
+      "speed_normalized": 0.0,
+      "ratio_normalized": 0.0
+    },
+    {
+      "rank": 2,
+      "model": "deepgram-nova-3",
+      "cer": 0.07727517501346258,
+      "wer": 0.1784351145038168,
+      "cer_wer_ratio": 2.309087161209671,
+      "loanword_accuracy": 0.9709677419354839,
+      "samples_per_second": 0.49348218202086985,
+      "composite_score": 0.0,
+      "cer_normalized": 0.0,
+      "wer_normalized": 0.0,
+      "loanword_normalized": 0.0,
+      "speed_normalized": 1.0,
+      "ratio_normalized": 1.0
+    }
+  ]
+}

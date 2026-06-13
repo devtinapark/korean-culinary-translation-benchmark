@@ -1,0 +1,3 @@
+rank,model,cer,wer,cer_wer_ratio,loanword_accuracy,samples_per_second,composite_score,cer_normalized,wer_normalized,loanword_normalized,speed_normalized,ratio_normalized
+1,openai-gpt4o-transcribe,0.05277329025309639,0.11354961832061068,2.1516494002181026,0.9741935483870968,0.24542624487356385,1.0,1.0,1.0,1.0,0.0,0.0
+2,deepgram-nova-3,0.07727517501346258,0.1784351145038168,2.309087161209671,0.9709677419354839,0.49348218202086985,0.0,0.0,0.0,0.0,1.0,1.0

@@ -1,0 +1,5 @@
+Multilingual ASR Model Comparison — OpenAI vs Deepgram
+==================================================
+
+1. openai-gpt4o-transcribe
+2. deepgram-nova-3
