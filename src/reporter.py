@@ -46,27 +46,27 @@ class BenchmarkReporter:
         md = []
 
         # Header
-        md.append("# Multilingual ASR Benchmark Results")
+        md.append("# LLM Translation & Schema-Validation Benchmark")
         md.append("")
-        md.append("## Kitchen Audio — EN / KO / ES / ZH")
+        md.append("## Korean Culinary ASR Transcripts — EN / KO × Clean / Noisy")
         md.append("")
 
         # Metadata
         if metadata:
             md.append("### Configuration")
             md.append("")
-            md.append(f"- **Dataset**: {metadata.get('dataset', 'Kitchen Audio Samples')}")
-            md.append(f"- **Samples**: {metadata.get('num_samples', 'N/A')}")
+            md.append(f"- **Dataset**: {metadata.get('dataset', 'Korean Culinary ASR Transcripts')}")
+            md.append(f"- **Scenarios**: {metadata.get('num_scenarios', metadata.get('num_samples', 'N/A'))}")
             md.append(f"- **Models Tested**: {len(ranked_df)}")
-            md.append(f"- **Note**: Composite score is relative — meaningful only when comparing multiple models")
+            md.append("- **Note**: Composite score is relative — run all models to get meaningful rankings")
             md.append("")
 
         # Summary
         md.append("## Summary")
         md.append("")
-        md.append("Evaluates multilingual ASR models on real kitchen audio clips containing")
-        md.append("casual speech, background noise, and code-switched language (Korean + English).")
-        md.append("All models must auto-detect language without a language hint.")
+        md.append("Evaluates LLM translation quality on unstructured ASR text from spoken Korean/English recipes.")
+        md.append("Each model must extract a structured bilingual recipe, preserve Konglish loanwords verbatim,")
+        md.append("and surface hidden culinary intent behind vague spoken instructions.")
         md.append("")
 
         # Model Results
@@ -78,14 +78,14 @@ class BenchmarkReporter:
 
             md.append(f"### {i}. {model_name}")
             md.append("")
-            md.append("**Combined metrics (all 8 clips):**")
+            md.append("**Combined metrics (all 8 scenarios):**")
             md.append("")
             md.append("| Metric | Value |")
             md.append("|--------|-------|")
             md.append(f"| Composite Score | {row['composite_score']:.4f} |")
-            md.append(f"| CER (Character Error Rate) | {row['cer']:.4f} |")
-            md.append(f"| WER (Word Error Rate) | {row['wer']:.4f} |")
-            md.append(f"| Loanword / Code-switching Accuracy | {row['loanword_accuracy']:.4f} |")
+            md.append(f"| Schema Validity / Completeness | {row['cer']:.4f} |")
+            md.append(f"| Cultural Subtlety Score (Judge) | {row['wer']:.4f} |")
+            md.append(f"| Loanword Preservation | {row['loanword_accuracy']:.4f} |")
 
             cost = (cost_data or {}).get(model_name)
             if cost:
@@ -96,30 +96,30 @@ class BenchmarkReporter:
                 md.append(f"| Total Latency | {cost['total_latency']:.2f}s |")
             md.append("")
 
-            # Noise degradation delta
+            # Noise impact on schema validity
             samples = (per_model_samples or {}).get(model_name, [])
             clean = [s for s in samples if not s.get("noise")]
             noisy = [s for s in samples if s.get("noise")]
             if clean and noisy:
-                clean_cer = sum(s["cer"] for s in clean) / len(clean)
-                noisy_cer = sum(s["cer"] for s in noisy) / len(noisy)
-                delta = noisy_cer - clean_cer
-                md.append("**Noise impact:**")
+                clean_val = sum(s["cer"] for s in clean) / len(clean)
+                noisy_val = sum(s["cer"] for s in noisy) / len(noisy)
+                delta = noisy_val - clean_val
+                md.append("**Noise impact on schema validity:**")
                 md.append("")
-                md.append("| | Avg CER |")
-                md.append("|---|---------|")
-                md.append(f"| Clean clips | {clean_cer:.4f} |")
-                md.append(f"| Noisy clips | {noisy_cer:.4f} |")
-                md.append(f"| Degradation (Δ) | +{delta:.4f} |")
+                md.append("| | Avg Schema Validity |")
+                md.append("|---|---------------------|")
+                md.append(f"| Clean scenarios | {clean_val:.4f} |")
+                md.append(f"| Noisy scenarios | {noisy_val:.4f} |")
+                md.append(f"| Delta (Δ) | {delta:+.4f} |")
                 md.append("")
 
-            # Per-sample breakdown
+            # Per-scenario breakdown
             samples = (per_model_samples or {}).get(model_name)
             if samples:
-                md.append("**Per-sample breakdown:**")
+                md.append("**Per-scenario breakdown:**")
                 md.append("")
-                md.append("| Sample | CER | WER |")
-                md.append("|--------|-----|-----|")
+                md.append("| Scenario | Schema Validity | Loanword Pres. |")
+                md.append("|----------|----------------|----------------|")
                 for s in samples:
                     md.append(f"| {s['id']} | {s['cer']:.4f} | {s['wer']:.4f} |")
                 md.append("")
@@ -127,15 +127,13 @@ class BenchmarkReporter:
         # Full Rankings
         md.append("## Full Rankings")
         md.append("")
-        md.append("| Rank | Model | Composite Score | CER | WER | Loanword Acc | Cost (this run) |")
-        md.append("|------|-------|----------------|-----|-----|--------------|-----------------|")
+        md.append("| Rank | Model | Score | Schema Validity | Cultural Score | Loanword Pres. |")
+        md.append("|------|-------|-------|----------------|---------------|----------------|")
 
         for _, row in ranked_df.iterrows():
-            cost = (cost_data or {}).get(row['model'])
-            cost_str = f"${cost['estimated_cost']:.6f}" if cost else "—"
             md.append(
                 f"| {row['rank']} | {row['model']} | {row['composite_score']:.4f} | "
-                f"{row['cer']:.4f} | {row['wer']:.4f} | {row['loanword_accuracy']:.4f} | {cost_str} |"
+                f"{row['cer']:.4f} | {row['wer']:.4f} | {row['loanword_accuracy']:.4f} |"
             )
 
         md.append("")
@@ -145,29 +143,30 @@ class BenchmarkReporter:
         md.append("")
         md.append("### Primary Metrics")
         md.append("")
-        md.append("- **CER (Character Error Rate)**: Primary metric for Korean due to agglutinative nature")
-        md.append("  - Lower is better (0 = perfect, 1 = complete failure)")
-        md.append("  - More granular than WER for Korean text")
+        md.append("- **Schema Validity / Completeness**: fraction of `BilingualRecipe` fields populated")
+        md.append("  - is_valid = True requires ≥1 ingredient and ≥1 step")
+        md.append("  - completeness counts optional fields (quantity, notes, hidden_intent, cultural_notes)")
+        md.append("  - Higher is better")
         md.append("")
-        md.append("- **WER (Word Error Rate)**: Secondary metric")
-        md.append("  - Lower is better")
-        md.append("  - Word-level accuracy")
+        md.append("- **Loanword Preservation**: fraction of input Konglish terms retained in any output field")
+        md.append("  - Checks `loanwords_detected`, ingredient notes, step text, cultural_notes")
+        md.append("  - 1.0 when input has no detectable loanwords")
+        md.append("  - Higher is better")
         md.append("")
-        md.append("- **Loanword / Code-switching Accuracy**: accuracy on English loanwords and mixed-language terms")
-        md.append("  - Critical for kitchen context (e.g., 오븐, 레시피, 간 맞추기)")
+        md.append("- **Cultural Subtlety Score (LLM-as-Judge)**: 1–5 scale scored by a judge LLM")
+        md.append("  - 5 = all loanwords retained, hidden intent surfaced, cultural notes meaningful")
+        md.append("  - 0 = judge stub not yet activated")
         md.append("  - Higher is better")
         md.append("")
 
-        # Composite Score
         md.append("### Composite Score")
         md.append("")
-        md.append("Weighted combination of metrics (scores are relative between models — run all 3 to get meaningful rankings):")
-        md.append("- CER: 55% — primary accuracy metric")
-        md.append("- WER: 30% — secondary accuracy metric")
-        md.append("- Loanword / code-switching accuracy: 15%")
+        md.append("Weighted combination (scores are relative — run all models for meaningful rankings):")
+        md.append("- Schema validity: 40%")
+        md.append("- Loanword preservation: 35%")
+        md.append("- Cultural subtlety (judge): 25%")
         md.append("")
-        md.append("*Speed excluded: measures API latency, not model quality.*")
-        md.append("*CER/WER ratio excluded: only meaningful for Korean-only models.*")
+        md.append("*Latency tracked but excluded from ranking — measures API speed, not translation quality.*")
         md.append("")
 
         return "\n".join(md)
@@ -281,7 +280,7 @@ class BenchmarkReporter:
         output_path = self.output_dir / filename
 
         with open(output_path, 'w') as f:
-            f.write("Multilingual ASR Model Comparison — OpenAI vs Deepgram\n")
+            f.write("LLM Translation Benchmark — Top Models\n")
             f.write("=" * 50 + "\n\n")
 
             for i, model in enumerate(top_models[:2], 1):
