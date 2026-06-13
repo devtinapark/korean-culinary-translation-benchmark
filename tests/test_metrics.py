@@ -1,121 +1,131 @@
 """
-Unit tests for metrics calculation
+Unit tests for schema validation and loanword preservation metrics
 """
 import unittest
-from src.metrics import (
-    KoreanMetricsCalculator,
-    LoanwordAccuracyCalculator,
-    InferenceSpeedCalculator
-)
+from src.metrics import SchemaValidator, LoanwordPreservationScorer
+from src.schemas import BilingualRecipe, IngredientItem, RecipeStep
 
 
-class TestKoreanMetricsCalculator(unittest.TestCase):
-    """Test Korean metrics calculator"""
-
-    def setUp(self):
-        self.calculator = KoreanMetricsCalculator()
-
-    def test_normalize_korean_text(self):
-        """Test Korean text normalization"""
-        text = "  안녕하세요,  세계!  "
-        normalized = self.calculator.normalize_korean_text(text)
-
-        self.assertEqual(normalized, "안녕하세요 세계")
-
-    def test_calculate_cer_perfect_match(self):
-        """Test CER calculation with perfect match"""
-        references = ["안녕하세요"]
-        hypotheses = ["안녕하세요"]
-
-        cer = self.calculator.calculate_cer(references, hypotheses)
-        self.assertEqual(cer, 0.0)
-
-    def test_calculate_cer_complete_mismatch(self):
-        """Test CER calculation with complete mismatch"""
-        references = ["안녕"]
-        hypotheses = ["하세요"]
-
-        cer = self.calculator.calculate_cer(references, hypotheses)
-        self.assertGreater(cer, 0.0)
-
-    def test_calculate_wer_perfect_match(self):
-        """Test WER calculation with perfect match"""
-        references = ["안녕하세요 반갑습니다"]
-        hypotheses = ["안녕하세요 반갑습니다"]
-
-        wer = self.calculator.calculate_wer(references, hypotheses)
-        self.assertEqual(wer, 0.0)
-
-    def test_cer_wer_ratio(self):
-        """Test CER/WER ratio calculation"""
-        references = ["안녕하세요 여러분"]
-        hypotheses = ["안녕하세요 여러분"]
-
-        metrics = self.calculator.calculate_all_metrics(references, hypotheses)
-
-        # For perfect match, ratio should be 0 (both are 0)
-        self.assertEqual(metrics.cer, 0.0)
-        self.assertEqual(metrics.wer, 0.0)
+def _make_recipe(**kwargs) -> BilingualRecipe:
+    defaults = dict(
+        title_ko="계란말이",
+        title_en="Egg Roll",
+        source_language="ko",
+        ingredients=[
+            IngredientItem(name_ko="달걀", name_en="egg", quantity="3개")
+        ],
+        steps=[
+            RecipeStep(
+                step_number=1,
+                instruction_ko="달걀을 풀어주세요",
+                instruction_en="Beat the eggs",
+            )
+        ],
+        loanwords_detected=[],
+        cultural_notes=None,
+    )
+    defaults.update(kwargs)
+    return BilingualRecipe(**defaults)
 
 
-class TestLoanwordAccuracyCalculator(unittest.TestCase):
-    """Test loanword accuracy calculator"""
+class TestSchemaValidator(unittest.TestCase):
 
     def setUp(self):
-        self.calculator = LoanwordAccuracyCalculator()
+        self.validator = SchemaValidator()
 
-    def test_extract_loanwords(self):
-        """Test loanword extraction"""
-        text = "오늘은 pizza와 pasta를 먹었어요"
-        loanwords = self.calculator.extract_loanwords(text)
+    def test_none_recipe_invalid(self):
+        is_valid, completeness = self.validator.validate(None)
+        self.assertFalse(is_valid)
+        self.assertEqual(completeness, 0.0)
 
-        self.assertIn("pizza", loanwords)
-        self.assertIn("pasta", loanwords)
+    def test_minimal_valid_recipe(self):
+        recipe = _make_recipe()
+        is_valid, completeness = self.validator.validate(recipe)
+        self.assertTrue(is_valid)
+        self.assertGreater(completeness, 0.0)
+        self.assertLessEqual(completeness, 1.0)
 
-    def test_loanword_accuracy_perfect(self):
-        """Test loanword accuracy with perfect match"""
-        references = ["pizza를 먹었어요"]
-        hypotheses = ["pizza를 먹었어요"]
-
-        metrics = self.calculator.calculate_loanword_accuracy(references, hypotheses)
-
-        self.assertEqual(metrics['loanword_accuracy'], 1.0)
-        self.assertEqual(metrics['correct_loanwords'], 1)
-
-    def test_loanword_accuracy_no_loanwords(self):
-        """Test loanword accuracy with no loanwords"""
-        references = ["안녕하세요"]
-        hypotheses = ["안녕하세요"]
-
-        metrics = self.calculator.calculate_loanword_accuracy(references, hypotheses)
-
-        # No loanwords, accuracy should be 0
-        self.assertEqual(metrics['total_loanwords'], 0)
-
-
-class TestInferenceSpeedCalculator(unittest.TestCase):
-    """Test inference speed calculator"""
-
-    def test_calculate_speed(self):
-        """Test speed calculation"""
-        metrics = InferenceSpeedCalculator.calculate_speed(
-            num_samples=100,
-            total_time=10.0
+    def test_fully_populated_recipe_higher_completeness(self):
+        sparse = _make_recipe()
+        full = _make_recipe(
+            cultural_notes="손맛 — the cook's personal touch",
+            ingredients=[
+                IngredientItem(
+                    name_ko="달걀",
+                    name_en="egg",
+                    quantity="3개",
+                    notes="large eggs preferred",
+                )
+            ],
+            steps=[
+                RecipeStep(
+                    step_number=1,
+                    instruction_ko="달걀을 풀어주세요",
+                    instruction_en="Beat the eggs",
+                    hidden_intent="Uniform beating ensures even cooking and a smooth roll",
+                )
+            ],
         )
+        _, sparse_completeness = self.validator.validate(sparse)
+        _, full_completeness = self.validator.validate(full)
+        self.assertGreater(full_completeness, sparse_completeness)
 
-        self.assertEqual(metrics['samples_per_second'], 10.0)
-        self.assertEqual(metrics['avg_time_per_sample'], 0.1)
+    def test_empty_ingredients_invalid(self):
+        recipe = _make_recipe(ingredients=[])
+        is_valid, _ = self.validator.validate(recipe)
+        self.assertFalse(is_valid)
 
-    def test_calculate_speed_with_rtf(self):
-        """Test speed calculation with real-time factor"""
-        metrics = InferenceSpeedCalculator.calculate_speed(
-            num_samples=100,
-            total_time=10.0,
-            total_audio_duration=100.0
+    def test_empty_steps_invalid(self):
+        recipe = _make_recipe(steps=[])
+        is_valid, _ = self.validator.validate(recipe)
+        self.assertFalse(is_valid)
+
+
+class TestLoanwordPreservationScorer(unittest.TestCase):
+
+    def setUp(self):
+        self.scorer = LoanwordPreservationScorer()
+
+    def test_none_recipe_scores_zero(self):
+        score = self.scorer.score("오늘은 pizza를 만들었어요", None)
+        self.assertEqual(score, 0.0)
+
+    def test_no_input_loanwords_scores_one(self):
+        recipe = _make_recipe()
+        score = self.scorer.score("안녕하세요 여러분", recipe)
+        self.assertEqual(score, 1.0)
+
+    def test_loanword_present_in_detected_list(self):
+        recipe = _make_recipe(loanwords_detected=["pizza", "pasta"])
+        score = self.scorer.score("오늘은 pizza와 pasta를 만들었어요", recipe)
+        self.assertEqual(score, 1.0)
+
+    def test_loanword_missing_from_output_scores_low(self):
+        recipe = _make_recipe(loanwords_detected=[])
+        score = self.scorer.score("오늘은 pizza를 만들었어요", recipe)
+        self.assertLess(score, 1.0)
+
+    def test_partial_loanword_preservation(self):
+        recipe = _make_recipe(loanwords_detected=["pizza"])
+        score = self.scorer.score("pizza와 pasta와 oven을 사용했어요", recipe)
+        self.assertGreater(score, 0.0)
+        self.assertLess(score, 1.0)
+
+    def test_loanword_found_in_ingredient_notes(self):
+        recipe = _make_recipe(
+            loanwords_detected=[],
+            ingredients=[
+                IngredientItem(
+                    name_ko="버터",
+                    name_en="butter",
+                    notes="Konglish: butter — 버터",
+                )
+            ],
         )
+        score = self.scorer.score("버터를 넣어주세요", recipe)
+        # "butter" detected in ingredient notes
+        self.assertGreater(score, 0.0)
 
-        self.assertEqual(metrics['real_time_factor'], 0.1)
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
