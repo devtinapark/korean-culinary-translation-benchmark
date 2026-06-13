@@ -1,39 +1,59 @@
 {
   "metadata": {
-    "dataset": "Kitchen Audio Samples",
-    "num_samples": 8,
-    "config_file": "config.yaml"
+    "dataset": "Korean Culinary ASR Transcripts",
+    "num_scenarios": 8,
+    "config_file": "config.yaml",
+    "models_tested": [
+      "anthropic/claude-sonnet-4.6",
+      "google/gemini-2.5-pro",
+      "qwen/qwen3-max-thinking"
+    ]
   },
   "rankings": [
     {
       "rank": 1,
-      "model": "openai-gpt4o-transcribe",
-      "cer": 0.05277329025309639,
-      "wer": 0.11354961832061068,
-      "cer_wer_ratio": 2.1516494002181026,
-      "loanword_accuracy": 0.9741935483870968,
-      "samples_per_second": 0.24542624487356385,
-      "composite_score": 1.0,
-      "cer_normalized": 1.0,
-      "wer_normalized": 1.0,
+      "model": "google/gemini-2.5-pro",
+      "cer": 0.9350359295605216,
+      "wer": 0.0,
+      "cer_wer_ratio": 0.0,
+      "loanword_accuracy": 0.88821112246636,
+      "samples_per_second": 0.02382544437031556,
+      "composite_score": 0.7658458114389073,
+      "cer_normalized": 0.7271145285972684,
+      "wer_normalized": 0.5,
       "loanword_normalized": 1.0,
       "speed_normalized": 0.0,
-      "ratio_normalized": 0.0
+      "ratio_normalized": 0.5
     },
     {
       "rank": 2,
-      "model": "deepgram-nova-3",
-      "cer": 0.07727517501346258,
-      "wer": 0.1784351145038168,
-      "cer_wer_ratio": 2.309087161209671,
-      "loanword_accuracy": 0.9709677419354839,
-      "samples_per_second": 0.49348218202086985,
-      "composite_score": 0.0,
-      "cer_normalized": 0.0,
-      "wer_normalized": 0.0,
+      "model": "qwen/qwen3-max-thinking",
+      "cer": 0.9149197317059762,
+      "wer": 0.0,
+      "cer_wer_ratio": 0.0,
+      "loanword_accuracy": 0.8351963038664623,
+      "samples_per_second": 0.054645592494220616,
+      "composite_score": 0.525,
+      "cer_normalized": 1.0,
+      "wer_normalized": 0.5,
       "loanword_normalized": 0.0,
       "speed_normalized": 1.0,
-      "ratio_normalized": 1.0
+      "ratio_normalized": 0.5
+    },
+    {
+      "rank": 3,
+      "model": "anthropic/claude-sonnet-4.6",
+      "cer": 0.9886363636363636,
+      "wer": 0.0,
+      "cer_wer_ratio": 0.0,
+      "loanword_accuracy": 0.8859436211888946,
+      "samples_per_second": 0.031144513751880397,
+      "composite_score": 0.4600301204819281,
+      "cer_normalized": 0.0,
+      "wer_normalized": 0.5,
+      "loanword_normalized": 0.9572289156626518,
+      "speed_normalized": 0.23747677500251665,
+      "ratio_normalized": 0.5
     }
   ]
 }
