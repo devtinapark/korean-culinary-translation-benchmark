@@ -3,9 +3,11 @@
 Benchmarks three LLMs on their ability to ingest raw ASR text from spoken Korean/English kitchen recipes and produce a strictly-typed bilingual recipe structure — while preserving regional loanwords (Konglish) and surfacing hidden culinary intent.
 
 Models compared via [OpenRouter](https://openrouter.ai):
-- `anthropic/claude-3.7-sonnet`
+- `anthropic/claude-sonnet-4.6`
 - `google/gemini-2.5-pro`
 - `qwen/qwen3-max-thinking`
+
+> Model IDs are OpenRouter-specific. `anthropic/claude-3.7-sonnet` does not exist there — use `anthropic/claude-sonnet-4.6`. Verify any ID with `python -m src.main --list-models` or the [OpenRouter models list](https://openrouter.ai/models).
 
 ---
 
@@ -41,9 +43,9 @@ export $(cat .env | xargs)
 ### 3. Run
 
 ```bash
-python -m src.main                                        # all 3 models
-python -m src.main --model anthropic/claude-3.7-sonnet   # single model
-python -m src.main --list-models
+python -m src.main                                          # all 3 models
+python -m src.main --model anthropic/claude-sonnet-4.6    # single model
+python -m src.main --list-models                           # verify model IDs
 ```
 
 ---

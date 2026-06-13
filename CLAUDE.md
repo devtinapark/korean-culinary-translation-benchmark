@@ -8,7 +8,7 @@ a strictly-typed, schema-validated bilingual recipe structure while preserving
 regional loanwords (Konglish) and surfacing hidden culinary intent.
 
 Models compared:
-- `anthropic/claude-3.7-sonnet`
+- `anthropic/claude-sonnet-4.6`
 - `google/gemini-2.5-pro`
 - `qwen/qwen3-max-thinking`
 

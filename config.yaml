@@ -1,8 +1,8 @@
 openrouter_base_url: "https://openrouter.ai/api/v1"
-judge_model: "anthropic/claude-3.7-sonnet"
+judge_model: "anthropic/claude-sonnet-4.6"
 
 models:
-  - id: "anthropic/claude-3.7-sonnet"
+  - id: "anthropic/claude-sonnet-4.6"
     provider: openrouter
   - id: "google/gemini-2.5-pro"
     provider: openrouter
