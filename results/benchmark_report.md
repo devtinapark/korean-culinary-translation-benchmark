@@ -1,125 +1,118 @@
-# Multilingual ASR Benchmark Results
+# LLM Translation & Schema-Validation Benchmark
 
-## Kitchen Audio — EN / KO / ES / ZH
+## Korean Culinary ASR Transcripts — EN / KO × Clean / Noisy
 
 ### Configuration
 
-- **Dataset**: Kitchen Audio Samples
-- **Samples**: 8
-- **Models Tested**: 2
-- **Note**: Composite score is relative — meaningful only when comparing multiple models
+- **Dataset**: Korean Culinary ASR Transcripts
+- **Scenarios**: 8
+- **Models Tested**: 3
+- **Note**: Composite score is relative — run all models to get meaningful rankings
 
 ## Summary
 
-Evaluates multilingual ASR models on real kitchen audio clips containing
-casual speech, background noise, and code-switched language (Korean + English).
-All models must auto-detect language without a language hint.
+Evaluates LLM translation quality on unstructured ASR text from spoken Korean/English recipes.
+Each model must extract a structured bilingual recipe, preserve Konglish loanwords verbatim,
+and surface hidden culinary intent behind vague spoken instructions.
 
 ## Model Results
 
-### 1. openai-gpt4o-transcribe
+### 1. google/gemini-2.5-pro
 
-**Combined metrics (all 8 clips):**
-
-| Metric | Value |
-|--------|-------|
-| Composite Score | 1.0000 |
-| CER (Character Error Rate) | 0.0528 |
-| WER (Word Error Rate) | 0.1135 |
-| Loanword / Code-switching Accuracy | 0.9742 |
-| Audio Duration | 7.88 min |
-| Price per Minute | $0.0060 |
-| Estimated Cost (this run) | $0.047279 |
-| Avg Latency per Clip | 4.01s |
-| Total Latency | 32.10s |
-
-**Noise impact:**
-
-| | Avg CER |
-|---|---------|
-| Clean clips | 0.0440 |
-| Noisy clips | 0.0660 |
-| Degradation (Δ) | +0.0221 |
-
-**Per-sample breakdown:**
-
-| Sample | CER | WER |
-|--------|-----|-----|
-| en-a-clean | 0.0401 | 0.0473 |
-| en-a-noise | 0.0518 | 0.0878 |
-| en-b-clean | 0.0472 | 0.0818 |
-| en-b-noise | 0.0572 | 0.1006 |
-| ko-a-clean | 0.0548 | 0.2079 |
-| ko-a-noise | 0.0651 | 0.1980 |
-| ko-b-clean | 0.0337 | 0.0690 |
-| ko-b-noise | 0.0899 | 0.1810 |
-
-### 2. deepgram-nova-3
-
-**Combined metrics (all 8 clips):**
+**Combined metrics (all 8 scenarios):**
 
 | Metric | Value |
 |--------|-------|
-| Composite Score | 0.0000 |
-| CER (Character Error Rate) | 0.0773 |
-| WER (Word Error Rate) | 0.1784 |
-| Loanword / Code-switching Accuracy | 0.9710 |
-| Audio Duration | 7.88 min |
-| Price per Minute | $0.0052 |
-| Estimated Cost (this run) | $0.040975 |
-| Avg Latency per Clip | 1.97s |
-| Total Latency | 15.75s |
+| Composite Score | 0.7658 |
+| Schema Validity / Completeness | 0.9350 |
+| Cultural Subtlety Score (Judge) | 0.0000 |
+| Loanword Preservation | 0.8882 |
 
-**Noise impact:**
+**Noise impact on schema validity:**
 
-| | Avg CER |
-|---|---------|
-| Clean clips | 0.0633 |
-| Noisy clips | 0.0969 |
-| Degradation (Δ) | +0.0336 |
+| | Avg Schema Validity |
+|---|---------------------|
+| Clean scenarios | 0.9411 |
+| Noisy scenarios | 0.9290 |
+| Delta (Δ) | -0.0122 |
 
-**Per-sample breakdown:**
+**Per-scenario breakdown:**
 
-| Sample | CER | WER |
-|--------|-----|-----|
-| en-a-clean | 0.0518 | 0.0676 |
-| en-a-noise | 0.0968 | 0.1622 |
-| en-b-clean | 0.0730 | 0.1321 |
-| en-b-noise | 0.0730 | 0.1195 |
-| ko-a-clean | 0.0685 | 0.2376 |
-| ko-a-noise | 0.0753 | 0.3168 |
-| ko-b-clean | 0.0599 | 0.1638 |
-| ko-b-noise | 0.1423 | 0.3276 |
+| Scenario | Schema Validity | Loanword Pres. |
+|----------|----------------|----------------|
+| en-a-clean | 0.9592 | 0.8252 |
+| en-a-noise | 0.9565 | 0.8155 |
+| en-b-clean | 0.8864 | 0.7281 |
+| en-b-noise | 0.8636 | 0.7368 |
+| ko-a-clean | 1.0000 | 1.0000 |
+| ko-a-noise | 0.9767 | 1.0000 |
+| ko-b-clean | 0.9189 | 1.0000 |
+| ko-b-noise | 0.9189 | 1.0000 |
+
+### 2. qwen/qwen3-max-thinking
+
+**Combined metrics (all 8 scenarios):**
+
+| Metric | Value |
+|--------|-------|
+| Composite Score | 0.5250 |
+| Schema Validity / Completeness | 0.9149 |
+| Cultural Subtlety Score (Judge) | 0.0000 |
+| Loanword Preservation | 0.8352 |
+
+**Noise impact on schema validity:**
+
+| | Avg Schema Validity |
+|---|---------------------|
+| Clean scenarios | 0.9120 |
+| Noisy scenarios | 0.9178 |
+| Delta (Δ) | +0.0058 |
+
+**Per-scenario breakdown:**
+
+| Scenario | Schema Validity | Loanword Pres. |
+|----------|----------------|----------------|
+| en-a-clean | 0.8222 | 0.7282 |
+| en-a-noise | 0.8222 | 0.6990 |
+| en-b-clean | 0.8723 | 0.6491 |
+| en-b-noise | 0.8723 | 0.6053 |
+| ko-a-clean | 0.9535 | 1.0000 |
+| ko-a-noise | 0.9767 | 1.0000 |
+| ko-b-clean | 1.0000 | 1.0000 |
+| ko-b-noise | 1.0000 | 1.0000 |
 
 ## Full Rankings
 
-| Rank | Model | Composite Score | CER | WER | Loanword Acc | Cost (this run) |
-|------|-------|----------------|-----|-----|--------------|-----------------|
-| 1 | openai-gpt4o-transcribe | 1.0000 | 0.0528 | 0.1135 | 0.9742 | $0.047279 |
-| 2 | deepgram-nova-3 | 0.0000 | 0.0773 | 0.1784 | 0.9710 | $0.033883 |
+| Rank | Model | Score | Schema Validity | Cultural Score | Loanword Pres. |
+|------|-------|-------|----------------|---------------|----------------|
+| 1 | google/gemini-2.5-pro | 0.7658 | 0.9350 | 0.0000 | 0.8882 |
+| 2 | qwen/qwen3-max-thinking | 0.5250 | 0.9149 | 0.0000 | 0.8352 |
+| 3 | anthropic/claude-sonnet-4.6 | 0.4600 | 0.9886 | 0.0000 | 0.8859 |
 
 ## Metrics Explanation
 
 ### Primary Metrics
 
-- **CER (Character Error Rate)**: Primary metric for Korean due to agglutinative nature
-  - Lower is better (0 = perfect, 1 = complete failure)
-  - More granular than WER for Korean text
+- **Schema Validity / Completeness**: fraction of `BilingualRecipe` fields populated
+  - is_valid = True requires ≥1 ingredient and ≥1 step
+  - completeness counts optional fields (quantity, notes, hidden_intent, cultural_notes)
+  - Higher is better
 
-- **WER (Word Error Rate)**: Secondary metric
-  - Lower is better
-  - Word-level accuracy
+- **Loanword Preservation**: fraction of input Konglish terms retained in any output field
+  - Checks `loanwords_detected`, ingredient notes, step text, cultural_notes
+  - 1.0 when input has no detectable loanwords
+  - Higher is better
 
-- **Loanword / Code-switching Accuracy**: accuracy on English loanwords and mixed-language terms
-  - Critical for kitchen context (e.g., 오븐, 레시피, 간 맞추기)
+- **Cultural Subtlety Score (LLM-as-Judge)**: 1–5 scale scored by a judge LLM
+  - 5 = all loanwords retained, hidden intent surfaced, cultural notes meaningful
+  - 0 = judge stub not yet activated
   - Higher is better
 
 ### Composite Score
 
-Weighted combination of metrics (scores are relative between models — run all 3 to get meaningful rankings):
-- CER: 55% — primary accuracy metric
-- WER: 30% — secondary accuracy metric
-- Loanword / code-switching accuracy: 15%
+Weighted combination (scores are relative — run all models for meaningful rankings):
+- Schema validity: 40%
+- Loanword preservation: 35%
+- Cultural subtlety (judge): 25%
 
-*Speed excluded: measures API latency, not model quality.*
-*CER/WER ratio excluded: only meaningful for Korean-only models.*
+*Latency tracked but excluded from ranking — measures API speed, not translation quality.*
