@@ -4,10 +4,18 @@ judge_model: "anthropic/claude-sonnet-4.6"
 models:
   - id: "anthropic/claude-sonnet-4.6"
     provider: openrouter
+    price_per_million_input: 3.00    # USD — verify at openrouter.ai/models
+    price_per_million_output: 15.00
+
   - id: "google/gemini-2.5-pro"
     provider: openrouter
+    price_per_million_input: 1.25    # USD — verify at openrouter.ai/models
+    price_per_million_output: 10.00
+
   - id: "qwen/qwen3-max-thinking"
     provider: openrouter
+    price_per_million_input: 0.90    # USD — verify at openrouter.ai/models
+    price_per_million_output: 3.50
 
 evaluation:
   schema_validity_weight: 0.40
