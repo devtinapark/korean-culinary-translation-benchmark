@@ -7,42 +7,42 @@ metadata:
   - qwen/qwen3-max-thinking
   num_scenarios: 8
 rankings:
-- cer: 0.9350359295605216
-  cer_normalized: 0.7271145285972684
-  cer_wer_ratio: 0.0
-  composite_score: 0.7658458114389073
-  loanword_accuracy: 0.88821112246636
-  loanword_normalized: 1.0
-  model: google/gemini-2.5-pro
-  rank: 1
-  ratio_normalized: 0.5
-  samples_per_second: 0.02382544437031556
-  speed_normalized: 0.0
-  wer: 0.0
-  wer_normalized: 0.5
-- cer: 0.9149197317059762
+- cer: 0.00552884615384619
   cer_normalized: 1.0
   cer_wer_ratio: 0.0
-  composite_score: 0.525
-  loanword_accuracy: 0.8351963038664623
-  loanword_normalized: 0.0
-  model: qwen/qwen3-max-thinking
+  composite_score: 1.0
+  loanword_accuracy: 0.885432634985522
+  loanword_normalized: 1.0
+  model: anthropic/claude-sonnet-4.6
+  rank: 1
+  ratio_normalized: 0.5
+  samples_per_second: 0.029228739874238973
+  speed_normalized: 0.08696831615868314
+  wer: 0.025000000000000022
+  wer_normalized: 1.0
+- cer: 0.0658759260960311
+  cer_normalized: 0.0017123409803062595
+  cer_wer_ratio: 0.0
+  composite_score: 0.28208805443221147
+  loanword_accuracy: 0.8732541304718106
+  loanword_normalized: 0.8040089086859684
+  model: google/gemini-2.5-pro
   rank: 2
   ratio_normalized: 0.5
-  samples_per_second: 0.054645592494220616
-  speed_normalized: 1.0
-  wer: 0.0
-  wer_normalized: 0.5
-- cer: 0.9886363636363636
+  samples_per_second: 0.026411719944246136
+  speed_normalized: 0.0
+  wer: 0.15000000000000002
+  wer_normalized: 0.0
+- cer: 0.06597943812194185
   cer_normalized: 0.0
   cer_wer_ratio: 0.0
-  composite_score: 0.4600301204819281
-  loanword_accuracy: 0.8859436211888946
-  loanword_normalized: 0.9572289156626518
-  model: anthropic/claude-sonnet-4.6
+  composite_score: 0.0
+  loanword_accuracy: 0.8232945835462442
+  loanword_normalized: 0.0
+  model: qwen/qwen3-max-thinking
   rank: 3
   ratio_normalized: 0.5
-  samples_per_second: 0.031144513751880397
-  speed_normalized: 0.23747677500251665
-  wer: 0.0
-  wer_normalized: 0.5
+  samples_per_second: 0.058803055713618484
+  speed_normalized: 1.0
+  wer: 0.15000000000000002
+  wer_normalized: 0.0
