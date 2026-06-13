@@ -13,9 +13,11 @@ You are a culinary translator and cultural linguist specializing in Korean cuisi
 Given an unstructured text (ASR output from a spoken Korean or English recipe), extract \
 a fully structured bilingual recipe. You MUST:
 
-1. Preserve ALL loanwords (Konglish) exactly as spoken — words like 오븐(oven), 피자(pizza), \
-레시피(recipe), 버터(butter), 파스타(pasta), 세서미 오일(sesame oil). Do NOT translate them \
-away — list them verbatim in `loanwords_detected`.
+1. Preserve ALL loanwords (Konglish) exactly as spoken — phonetically transcribed English words \
+embedded in Korean text, such as 오븐(oven), 피자(pizza), 레시피(recipe), 버터(butter), \
+파스타(pasta), 프라이팬(frying pan). Do NOT translate them away — list them verbatim in \
+`loanwords_detected`. Note: native Korean words like 참기름 (sesame oil) are NOT loanwords \
+and should use their correct Korean form, not a phonetic transliteration.
 2. Extract the HIDDEN CULINARY INTENT behind vague instructions (e.g., "until it looks right" → \
 hidden_intent: "visual doneness cue that develops with experience; watch for color and texture \
 changes rather than relying on timing").
@@ -41,8 +43,11 @@ class OpenRouterClient:
 
     def translate(
         self, text: str, source_lang: str
-    ) -> tuple[BilingualRecipe | None, str | None]:
-        """Call the model and validate output. Returns (recipe, raw_response)."""
+    ) -> tuple[BilingualRecipe | None, str | None, int, int]:
+        """Call the model and validate output.
+
+        Returns (recipe, raw_response, prompt_tokens, completion_tokens).
+        """
         system = SYSTEM_PROMPT.format(schema=self._schema)
         response = self._client.chat.completions.create(
             model=self.model_id,
@@ -57,12 +62,15 @@ class OpenRouterClient:
             temperature=0.2,
         )
         raw = response.choices[0].message.content or ""
+        usage = response.usage
+        prompt_tokens = usage.prompt_tokens if usage else 0
+        completion_tokens = usage.completion_tokens if usage else 0
         try:
             parsed = json.loads(raw)
             recipe = BilingualRecipe.model_validate(parsed)
-            return recipe, raw
+            return recipe, raw, prompt_tokens, completion_tokens
         except (json.JSONDecodeError, ValidationError):
-            return None, raw
+            return None, raw, prompt_tokens, completion_tokens
 
 
 def create_openrouter_client(model_id: str) -> OpenRouterClient:
