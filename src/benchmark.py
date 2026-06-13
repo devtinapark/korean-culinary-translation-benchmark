@@ -1,199 +1,150 @@
-"""
-ASR Benchmark Runner
-Evaluates ASR models against kitchen audio samples
-"""
-from typing import Dict, List
+from __future__ import annotations
 import time
-import yaml
-from pathlib import Path
 from dataclasses import dataclass, field
+from pathlib import Path
 
-from .data_loader import KitchenAudioLoader, AudioPreprocessor
-from .model_wrapper import create_model_wrapper
-from .metrics import KoreanMetricsCalculator, LoanwordAccuracyCalculator, InferenceSpeedCalculator
+import yaml
+
+from .data_loader import TextScenarioLoader, TextScenario
+from .model_wrapper import OpenRouterClient
+from .metrics import SchemaValidator, LoanwordPreservationScorer
+from .judge import CulturalSubtletyJudge
+from .schemas import BilingualRecipe
+
+
+@dataclass
+class ScenarioResult:
+    scenario_id: str
+    language: str
+    noise: bool
+    is_valid: bool
+    schema_completeness: float
+    loanword_score: float
+    cultural_score: int
+    latency: float
+    raw_response: str | None
+    parsed_recipe: BilingualRecipe | None
 
 
 @dataclass
 class BenchmarkResult:
     model_name: str
-    cer: float = None
-    wer: float = None
-    cer_wer_ratio: float = None
-    loanword_accuracy: float = None
-    loanword_cer: float = None
-    samples_per_second: float = None
-    total_time: float = None
-    num_samples: int = 0
-    error: str = None
-    predictions: List[str] = field(default_factory=list)
-    references: List[str] = field(default_factory=list)
-    sample_ids: List[str] = field(default_factory=list)
-    per_sample_metrics: List[dict] = field(default_factory=list)
-    total_audio_minutes: float = 0.0
-    cost_per_minute: float = 0.0
-    estimated_cost: float = 0.0
-    latencies: List[float] = field(default_factory=list)  # seconds per clip
-    avg_latency: float = 0.0
-    total_latency: float = 0.0
+    avg_schema_validity: float
+    avg_loanword_score: float
+    avg_cultural_score: float
+    avg_latency: float
+    num_scenarios: int
+    error: str | None = None
+    per_scenario: list[ScenarioResult] = field(default_factory=list)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
+        # Maps new metric names to the keys ModelRanker expects (cer/wer/loanword_accuracy slots).
+        # cer slot   → schema validity (higher is better)
+        # wer slot   → cultural score  (higher is better, 0 when judge is stubbed)
+        # loanword   → loanword preservation
         return {
-            "model_name": self.model_name,
-            "cer": self.cer,
-            "wer": self.wer,
-            "cer_wer_ratio": self.cer_wer_ratio,
-            "loanword_accuracy": self.loanword_accuracy,
-            "loanword_cer": self.loanword_cer,
-            "samples_per_second": self.samples_per_second,
-            "total_time": self.total_time,
-            "num_samples": self.num_samples,
+            "cer": self.avg_schema_validity,
+            "wer": self.avg_cultural_score,
+            "loanword_accuracy": self.avg_loanword_score,
+            "samples_per_second": 1.0 / self.avg_latency if self.avg_latency > 0 else 0.0,
+            "cer_wer_ratio": 0.0,
             "error": self.error,
         }
 
 
-class ASRBenchmark:
+class TranslationBenchmark:
 
     def __init__(self, config_path: str = "config.yaml"):
-        self.config_path = config_path
-        self.config = self._load_config()
-        self.data_loader = None
-        self.metrics_calculator = KoreanMetricsCalculator()
-        self.loanword_calculator = LoanwordAccuracyCalculator()
-        self.results: Dict[str, BenchmarkResult] = {}
+        with open(config_path, encoding="utf-8") as f:
+            self._config = yaml.safe_load(f)
 
-    def _load_config(self) -> Dict:
-        with open(self.config_path, "r") as f:
-            return yaml.safe_load(f)
+        metadata_path = str(Path(config_path).parent / "kitchen_samples" / "metadata.json")
+        self._loader = TextScenarioLoader(metadata_path=metadata_path)
+        self._validator = SchemaValidator()
+        self._loanword_scorer = LoanwordPreservationScorer()
+        self._judge = CulturalSubtletyJudge(model_id=self._config.get("judge_model"))
+        self._scenarios: list[TextScenario] | None = None
 
     def setup_data(self):
-        ds = self.config["dataset"]
-        print("\n" + "=" * 60)
-        print("Loading Kitchen Audio Samples")
-        print("=" * 60)
+        self._scenarios = self._loader.load()
+        print(f"Loaded {len(self._scenarios)} text scenarios.")
 
-        self.data_loader = KitchenAudioLoader(
-            audio_dir=ds["audio_dir"],
-            transcripts_dir=ds.get("transcripts_dir"),
-            metadata_file=ds.get("metadata_file"),
+    def evaluate_model(self, model_id: str) -> BenchmarkResult:
+        if self._scenarios is None:
+            self.setup_data()
+
+        client = OpenRouterClient(model_id)
+        results: list[ScenarioResult] = []
+
+        for scenario in self._scenarios:
+            t0 = time.perf_counter()
+            recipe, raw = client.translate(scenario.text, scenario.language)
+            latency = time.perf_counter() - t0
+
+            is_valid, completeness = self._validator.validate(recipe)
+            loanword_score = self._loanword_scorer.score(scenario.text, recipe)
+
+            try:
+                cultural_score = self._judge.score(scenario.text, recipe) if recipe else 0
+            except NotImplementedError:
+                cultural_score = 0
+
+            results.append(ScenarioResult(
+                scenario_id=scenario.id,
+                language=scenario.language,
+                noise=scenario.noise,
+                is_valid=is_valid,
+                schema_completeness=completeness,
+                loanword_score=loanword_score,
+                cultural_score=cultural_score,
+                latency=latency,
+                raw_response=raw,
+                parsed_recipe=recipe,
+            ))
+            print(f"  [{scenario.id}] valid={is_valid} "
+                  f"completeness={completeness:.2f} "
+                  f"loanword={loanword_score:.2f} "
+                  f"latency={latency:.2f}s")
+
+        n = len(results)
+        return BenchmarkResult(
+            model_name=model_id,
+            avg_schema_validity=sum(r.schema_completeness for r in results) / n if n else 0.0,
+            avg_loanword_score=sum(r.loanword_score for r in results) / n if n else 0.0,
+            avg_cultural_score=sum(r.cultural_score for r in results) / n if n else 0.0,
+            avg_latency=sum(r.latency for r in results) / n if n else 0.0,
+            num_scenarios=n,
+            per_scenario=results,
         )
-        self.data_loader.load()
 
-        if len(self.data_loader) == 0:
-            raise RuntimeError(
-                "No audio samples found.\n"
-                f"  Place .wav files in: {ds['audio_dir']}\n"
-                f"  Place matching .txt files in: {ds.get('transcripts_dir')}\n"
-                "  Or fill in: kitchen_samples/metadata.json"
-            )
+    def run_all_models(self) -> dict[str, BenchmarkResult]:
+        models = self._config.get("models", [])
+        all_results: dict[str, BenchmarkResult] = {}
 
-        print(f"Ready: {len(self.data_loader)} samples\n")
-
-    def evaluate_model(self, model_name: str, model_config: Dict) -> BenchmarkResult:
-        result = BenchmarkResult(model_name=model_name)
-
-        print(f"\n{'=' * 60}")
-        print(f"Evaluating: {model_name}")
-        print(f"{'=' * 60}")
-
-        try:
-            model = create_model_wrapper(
-                model_name=model_name,
-                model_config=model_config,
-                device=self.config["benchmark"].get("device", "cpu"),
-            )
-
-            references, predictions, sample_ids = [], [], []
-            per_sample_metrics = []
-            total_audio_seconds = 0.0
-            start_time = time.time()
-
-            for sample in self.data_loader:
-                audio, sr = AudioPreprocessor.prepare_for_model(
-                    sample.audio, sample.sampling_rate
+        for model_cfg in models:
+            model_id = model_cfg["id"]
+            print(f"\nEvaluating {model_id}...")
+            try:
+                result = self.evaluate_model(model_id)
+                all_results[model_id] = result
+                print(f"  Schema validity: {result.avg_schema_validity:.3f} | "
+                      f"Loanword score: {result.avg_loanword_score:.3f} | "
+                      f"Avg latency: {result.avg_latency:.2f}s")
+            except Exception as exc:
+                all_results[model_id] = BenchmarkResult(
+                    model_name=model_id,
+                    avg_schema_validity=0.0,
+                    avg_loanword_score=0.0,
+                    avg_cultural_score=0.0,
+                    avg_latency=0.0,
+                    num_scenarios=0,
+                    error=str(exc),
                 )
-                total_audio_seconds += len(audio) / sr
+                print(f"  ERROR: {exc}")
 
-                t0 = time.time()
-                prediction = model.transcribe(audio, sr)
-                latency = time.time() - t0
+        return all_results
 
-                predictions.append(prediction)
-                references.append(sample.text)
-                sample_ids.append(sample.id)
-
-                # Per-sample metrics
-                sample_cer = self.metrics_calculator.calculate_cer([sample.text], [prediction])
-                sample_wer = self.metrics_calculator.calculate_wer([sample.text], [prediction])
-                per_sample_metrics.append({
-                    "id": sample.id,
-                    "cer": round(sample_cer, 4),
-                    "wer": round(sample_wer, 4),
-                    "latency_sec": round(latency, 2),
-                    "noise": "noise" in sample.id,
-                })
-                print(f"  [{sample.id}]")
-                print(f"    ref : {sample.text[:80]}{'...' if len(sample.text) > 80 else ''}")
-                print(f"    pred: {prediction[:80]}{'...' if len(prediction) > 80 else ''}")
-                print(f"    CER: {sample_cer:.4f}  WER: {sample_wer:.4f}  latency: {latency:.2f}s")
-
-
-            total_time = time.time() - start_time
-
-            metrics = self.metrics_calculator.calculate_all_metrics(references, predictions)
-            loanword_metrics = self.loanword_calculator.calculate_loanword_accuracy(references, predictions)
-            speed = InferenceSpeedCalculator.calculate_speed(len(references), total_time)
-
-            result.cer = metrics.cer
-            result.wer = metrics.wer
-            result.cer_wer_ratio = metrics.cer_wer_ratio
-            result.loanword_accuracy = loanword_metrics.get("loanword_accuracy", 0.0)
-            result.loanword_cer = loanword_metrics.get("loanword_cer", 0.0)
-            result.samples_per_second = speed["samples_per_second"]
-            result.total_time = total_time
-            result.num_samples = len(references)
-            result.predictions = predictions
-            result.references = references
-            result.sample_ids = sample_ids
-            result.per_sample_metrics = per_sample_metrics
-
-            cost_per_minute = model_config.get("cost_per_minute", 0.0)
-            audio_minutes = total_audio_seconds / 60
-            result.total_audio_minutes = round(audio_minutes, 3)
-            result.cost_per_minute = cost_per_minute
-            result.estimated_cost = round(audio_minutes * cost_per_minute, 6)
-
-            latencies = [s["latency_sec"] for s in per_sample_metrics]
-            result.latencies = latencies
-            result.avg_latency = round(sum(latencies) / len(latencies), 2) if latencies else 0.0
-            result.total_latency = round(sum(latencies), 2)
-
-            print(f"\n  ── Combined ──────────────────────────────")
-            print(f"  CER: {metrics.cer:.4f}  WER: {metrics.wer:.4f}  "
-                  f"Loanword acc: {result.loanword_accuracy:.4f}")
-
-        except Exception as e:
-            print(f"  ERROR: {e}")
-            result.error = str(e)
-
-        return result
-
-    def run_all_models(self) -> Dict[str, BenchmarkResult]:
-        models_config = self.config["models"]
-        print(f"\n{'=' * 60}")
-        print(f"Running {len(models_config)} models")
-        print("=" * 60)
-
-        for model_name, model_config in models_config.items():
-            result = self.evaluate_model(model_name, model_config)
-            self.results[model_name] = result
-
-        return self.results
-
-    def run_single_model(self, model_name: str) -> BenchmarkResult:
-        if model_name not in self.config["models"]:
-            raise ValueError(f"Model '{model_name}' not found in config. "
-                             f"Available: {list(self.config['models'].keys())}")
-
-        result = self.evaluate_model(model_name, self.config["models"][model_name])
-        self.results[model_name] = result
-        return result
+    def run_single_model(self, model_id: str) -> BenchmarkResult:
+        if self._scenarios is None:
+            self.setup_data()
+        return self.evaluate_model(model_id)
