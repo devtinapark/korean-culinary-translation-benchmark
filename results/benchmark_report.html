@@ -285,15 +285,15 @@
       <tr><th>Scenario</th><th>Schema</th><th>Loanword</th><th>loanwords_detected</th></tr>
     </thead>
     <tbody>
-      <tr><td>en-a-clean</td><td class="hi">1.0000</td><td class="mid">0.7379</td><td><code>세서미 오일</code> — Konglish form ✓</td></tr>
-      <tr><td>en-a-noise <span class="tag tag-noise">noisy</span></td><td class="hi">1.0000</td><td class="mid">0.8058</td><td><code>세서미 오일</code> ✓</td></tr>
-      <tr><td>en-b-clean</td><td class="hi">1.0000</td><td class="mid">0.7456</td><td><code>세서미 오일</code> ✓</td></tr>
-      <tr><td>en-b-noise <span class="tag tag-noise">noisy</span></td><td class="hi">1.0000</td><td class="mid">0.7982</td><td><code>세서미 오일</code> ✓</td></tr>
+      <tr><td>en-a-clean</td><td class="hi">1.0000</td><td class="mid">0.7379</td><td><code>세서미 오일</code> ✗ — source says "sesame oil" (English); correct Korean is <code>참기름</code></td></tr>
+      <tr><td>en-a-noise <span class="tag tag-noise">noisy</span></td><td class="hi">1.0000</td><td class="mid">0.8058</td><td><code>세서미 오일</code> ✗ — same issue; form absent from source transcript</td></tr>
+      <tr><td>en-b-clean</td><td class="hi">1.0000</td><td class="mid">0.7456</td><td><code>세서미 오일</code> ✗ — source says "sesame oil" (English); correct Korean is <code>참기름</code></td></tr>
+      <tr><td>en-b-noise <span class="tag tag-noise">noisy</span></td><td class="hi">1.0000</td><td class="mid">0.7982</td><td><code>세서미 오일</code> ✗ — same issue; form absent from source transcript</td></tr>
       <tr><td>ko-a-clean <span class="tag tag-ko">ko</span></td><td class="hi">1.0000</td><td class="hi">1.0000</td><td><code>프라이팬</code> ✓</td></tr>
       <tr><td>ko-a-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td><td class="hi">1.0000</td><td class="hi">1.0000</td><td><code>프라이팬</code> ✓</td></tr>
       <tr><td>ko-b-clean <span class="tag tag-ko">ko</span></td><td class="hi">1.0000</td><td class="hi">1.0000</td><td><code>레시피</code> ✓</td></tr>
       <tr><td>ko-b-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td><td class="mid">0.9091</td><td class="hi">1.0000</td><td><code>레시피</code> ✓ &mdash; 1 ingredient <code>quantity=null</code></td></tr>
-      <tr class="avg-row"><td>Average</td><td>0.9886</td><td>0.8859</td><td>Consistent Konglish register across all scenarios</td></tr>
+      <tr class="avg-row"><td>Average</td><td>0.9886</td><td>0.8859</td><td>KO loanwords correct; EN scenarios used <code>세서미 오일</code> (system-prompt artifact — correct form: <code>참기름</code>)</td></tr>
     </tbody>
   </table>
 
@@ -362,7 +362,7 @@
       </tr>
       <tr>
         <td><strong>Loanword register</strong></td>
-        <td>Claude uses Korean-script Konglish forms (<code>세서미 오일</code>). Gemini and Qwen use English forms (<code>sesame oil</code>). The scorer accepts both via body-text search, but the field intent is to preserve the <em>Konglish</em> register specifically.</td>
+        <td>All three models output English "sesame oil" in some form for EN scenarios. Claude used <code>세서미 오일</code> (phonetic Konglish), but this was a system-prompt artifact — <em>no source transcript contains this form</em>. The correct native Korean term is <code>참기름</code>. The system prompt has been updated to remove <code>세서미 오일</code> as an example and clarify that <code>참기름</code> is not a loanword.</td>
       </tr>
       <tr>
         <td><strong>KO loanword unanimity</strong></td>
