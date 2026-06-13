@@ -42,10 +42,12 @@ class BenchmarkResult:
         # cer slot   → schema validity (higher is better)
         # wer slot   → cultural score  (higher is better, 0 when judge is stubbed)
         # loanword   → loanword preservation
+        # ModelRanker normalizes cer/wer with lower_is_better=True, so invert
+        # higher-is-better metrics before passing them in.
         return {
-            "cer": self.avg_schema_validity,
-            "wer": self.avg_cultural_score,
-            "loanword_accuracy": self.avg_loanword_score,
+            "cer": 1.0 - self.avg_schema_validity,          # lower = more valid
+            "wer": 1.0 - (self.avg_cultural_score / 5.0),   # lower = higher judge score
+            "loanword_accuracy": self.avg_loanword_score,    # already higher-is-better ✓
             "samples_per_second": 1.0 / self.avg_latency if self.avg_latency > 0 else 0.0,
             "cer_wer_ratio": 0.0,
             "error": self.error,
