@@ -1,591 +1,473 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ASR Benchmark — OpenAI vs Deepgram</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Translation Benchmark — Korean Culinary (Corrected)</title>
 <style>
   :root {
-    --ivory: #FAF9F5;
-    --slate: #141413;
-    --clay:  #D97757;
-    --oat:   #E3DACC;
-    --olive: #788C5D;
-    --rust:  #B04A3F;
-    --gray-100: #F0EEE6;
-    --gray-300: #D1CFC5;
-    --gray-500: #87867F;
-    --gray-700: #3D3D3A;
-    --white: #FFFFFF;
-    --serif: ui-serif, Georgia, serif;
-    --sans:  system-ui, -apple-system, sans-serif;
-    --mono:  ui-monospace, 'SF Mono', Menlo, monospace;
-    --radius-panel: 12px;
-    --border: 1.5px solid var(--gray-300);
+    --bg: #fafaf8;
+    --surface: #ffffff;
+    --border: #e5e5e0;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --olive: #4a7030;
+    --clay: #b07028;
+    --rust: #983028;
+    --clay-bg: #fdf3e7;
+    --accent: #2a4a7a;
+    --green-bg: #f0f7f0;
+    --green-border: #4a8a4a;
+    --code-bg: #1a1a2e;
+    --code-text: #e8e8f0;
   }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; }
+  .page { max-width: 1040px; margin: 0 auto; padding: 48px 24px; }
 
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+  h2 { font-size: 1.02rem; font-weight: 600; color: var(--accent); margin: 44px 0 16px;
+       border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  h3 { font-size: 0.9rem; font-weight: 600; color: var(--muted); margin: 24px 0 10px;
+       text-transform: uppercase; letter-spacing: 0.05em; }
+  .subtitle { color: var(--muted); font-size: 0.87rem; margin-bottom: 28px; }
 
-  body {
-    margin: 0;
-    padding: 56px 24px 120px;
-    background: var(--ivory);
-    color: var(--slate);
-    font-family: var(--sans);
-    font-size: 15px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
+  .correction-banner {
+    background: var(--green-bg);
+    border: 1.5px solid var(--green-border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 36px;
+    font-size: 0.84rem;
+    color: #1a3a1a;
   }
+  .correction-banner strong { color: var(--green-border); }
 
-  .page { max-width: 920px; margin: 0 auto; }
+  .meta-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 40px; }
+  .meta-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+               padding: 11px 16px; font-size: 0.83rem; }
+  .meta-chip strong { display: block; font-size: 1.1rem; color: var(--accent); }
 
-  /* Header */
-  header { margin-bottom: 36px; }
-  .header-label {
-    font-family: var(--mono);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--gray-500);
-    margin-bottom: 10px;
-  }
-  h1 {
-    font-family: var(--serif);
-    font-weight: 500;
-    font-size: 40px;
-    letter-spacing: -0.01em;
-    margin: 0 0 14px;
-    line-height: 1.15;
-  }
-  .meta-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 10px;
-  }
-  .pill {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 5px;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 999px;
-    padding: 4px 11px;
-    line-height: 1;
-  }
-  .pill .k { font-weight: 400; opacity: 0.75; }
-  .pill .v { font-family: var(--mono); }
-  .pill.neutral {
-    background: var(--gray-100);
-    color: var(--gray-700);
-    border: var(--border);
-  }
-  .pill.noise-pill {
-    background: #FEF3C7;
-    color: #92400E;
-    font-size: 10px;
-    padding: 2px 7px;
-    font-weight: 500;
-  }
+  .podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+  .model-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+                padding: 20px 18px; position: relative; }
+  .model-card.rank-1 { border-color: #b8973c; box-shadow: 0 2px 14px rgba(184,151,60,0.13); }
+  .rank-badge { position: absolute; top: 13px; right: 13px; width: 24px; height: 24px;
+                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                font-weight: 700; font-size: 0.78rem; }
+  .rank-1 .rank-badge { background: #b8973c; color: #fff; }
+  .rank-2 .rank-badge { background: #7a9090; color: #fff; }
+  .rank-3 .rank-badge { background: #a06848; color: #fff; }
+  .model-id { font-size: 0.72rem; color: var(--muted); font-family: monospace; margin-bottom: 2px; }
+  .model-display { font-weight: 600; font-size: 0.9rem; margin-bottom: 11px; }
+  .composite { font-size: 1.35rem; font-weight: 700; color: var(--accent); margin-bottom: 11px; }
+  .composite small { font-size: 0.7rem; color: var(--muted); font-weight: 400; display: block; }
+  .score-row { display: flex; justify-content: space-between; align-items: center;
+               padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+  .score-row:last-child { border-bottom: none; }
+  .score-label { color: var(--muted); }
+  .score-val { font-weight: 600; font-variant-numeric: tabular-nums; }
 
-  /* TL;DR */
-  .tldr {
-    background: var(--slate);
-    color: var(--ivory);
-    border-radius: var(--radius-panel);
-    padding: 22px 26px;
-    margin-bottom: 48px;
-  }
-  .tldr-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--oat);
-    margin-bottom: 10px;
-  }
-  .tldr p { margin: 0; font-size: 15.5px; line-height: 1.65; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-bottom: 8px; }
+  th { text-align: left; padding: 7px 11px; background: var(--bg); color: var(--muted);
+       font-weight: 600; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em;
+       border-bottom: 2px solid var(--border); }
+  td { padding: 7px 11px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr.avg-row td { background: #f5f5f2; font-weight: 600; border-top: 2px solid var(--border); }
+  .tag { font-size: 0.68rem; border-radius: 3px; padding: 1px 5px; margin-left: 4px;
+         display: inline-block; vertical-align: middle; }
+  .tag-noise { background: #f0dfd0; color: #7a3e18; }
+  .tag-ko    { background: #dde6f5; color: #1a2e60; }
 
-  /* Sections */
-  section { margin-bottom: 52px; scroll-margin-top: 24px; }
-  h2 {
-    font-family: var(--serif);
-    font-weight: 500;
-    font-size: 26px;
-    letter-spacing: -0.01em;
-    margin: 0 0 6px;
-  }
-  hr.rule {
-    border: none;
-    border-top: 1px solid var(--gray-300);
-    margin: 0 0 24px;
-  }
+  .hi  { color: var(--olive); font-weight: 600; }
+  .mid { color: var(--clay); }
+  .lo  { color: var(--rust); }
+  .dim { color: var(--muted); }
 
-  /* Model cards */
-  .model-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 16px;
-  }
-  .model-card {
-    background: var(--white);
-    border: var(--border);
-    border-radius: var(--radius-panel);
-    padding: 24px 24px 20px;
-  }
-  .model-rank {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 5px;
-  }
-  .model-name {
-    font-family: var(--mono);
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--slate);
-    margin-bottom: 20px;
-    word-break: break-all;
-  }
-  .model-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 18px;
-  }
-  .stat-block { }
-  .stat-num {
-    font-family: var(--serif);
-    font-size: 36px;
-    font-weight: 500;
-    line-height: 1;
-    margin-bottom: 5px;
-  }
-  .stat-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--gray-500);
-  }
-  .model-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding-top: 16px;
-    border-top: 1px solid var(--gray-100);
-  }
+  .metric-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+  .metric-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+                padding: 12px 14px; }
+  .metric-box .val { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+  .metric-box .lbl { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
 
-  /* Tables */
-  .table-wrap {
-    background: var(--white);
-    border: var(--border);
-    border-radius: var(--radius-panel);
-    overflow: hidden;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  thead th {
-    background: var(--gray-100);
-    text-align: left;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--gray-500);
-    padding: 11px 16px;
-    border-bottom: 1px solid var(--gray-300);
-  }
-  tbody td {
-    padding: 11px 16px;
-    border-bottom: 1px solid var(--gray-100);
-    font-size: 14px;
-    color: var(--gray-700);
-  }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: var(--gray-100); transition: background 0.1s; }
-  .noisy-row td { background: #FFFBEB; }
-  .noisy-row:hover td { background: #FEF3C7; }
+  .bug-log { background: var(--code-bg); color: var(--code-text); border-radius: 10px;
+             padding: 26px 30px; font-size: 0.82rem; line-height: 1.75; margin-top: 12px; }
+  .bug-log h3 { color: #ffaa66; font-size: 0.86rem; font-weight: 600; margin: 18px 0 7px;
+               text-transform: none; letter-spacing: 0; }
+  .bug-log h3:first-child { margin-top: 0; }
+  .bug-log code { background: #2d2d4e; padding: 1px 5px; border-radius: 3px;
+                  font-family: "SF Mono","Fira Code",monospace; color: #ffcc66; }
+  .bug-log pre { background: #111128; border-radius: 6px; padding: 12px 16px;
+                 font-family: "SF Mono","Fira Code",monospace; font-size: 0.78rem;
+                 color: #d0d8f0; white-space: pre-wrap; margin: 8px 0; }
+  .bug-log .correct { color: #88ee88; }
+  .bug-log .wrong   { color: #ff8080; }
+  .bug-log .em      { color: #ffcc66; font-weight: 600; }
+  .bug-log p { margin-bottom: 8px; }
 
-  /* Legend */
-  .legend {
-    display: flex;
-    gap: 20px;
-    margin-top: 12px;
-    font-size: 12px;
-    color: var(--gray-500);
-    flex-wrap: wrap;
-  }
-  .legend-dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 5px;
-    vertical-align: middle;
-  }
+  .note { background: var(--clay-bg); border-left: 3px solid var(--clay); padding: 11px 15px;
+          border-radius: 0 8px 8px 0; font-size: 0.83rem; color: #5a3a10; margin: 14px 0; }
+  .note.green { background: var(--green-bg); border-left-color: var(--green-border);
+                color: #1a3a1a; }
 
-  /* Footer */
-  footer {
-    text-align: center;
-    color: var(--gray-500);
-    font-size: 12px;
-    margin-top: 64px;
-    font-family: var(--mono);
-  }
-
-  @media (max-width: 640px) {
-    h1 { font-size: 28px; }
-    .model-stats { grid-template-columns: 1fr 1fr; }
-  }
+  .footer { margin-top: 48px; font-size: 0.77rem; color: var(--muted);
+            border-top: 1px solid var(--border); padding-top: 16px; }
+  code { font-family: "SF Mono","Fira Code",monospace; background: #f0f0ee;
+         padding: 1px 4px; border-radius: 3px; font-size: 0.88em; }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- Header -->
-  <header>
-    <div class="header-label">ASR Benchmark Report</div>
-    <h1>OpenAI vs Deepgram<br>Multilingual Kitchen Audio</h1>
-    <div class="meta-row">
-      <span class="pill neutral"><span class="k">date</span><span class="v">May 31, 2026</span></span>
-      <span class="pill neutral"><span class="k">clips</span><span class="v">8</span></span>
-      <span class="pill neutral"><span class="k">languages</span><span class="v">EN · KO</span></span>
-      <span class="pill neutral"><span class="k">models</span><span class="v">2</span></span>
-    </div>
-  </header>
+  <h1>LLM Translation &amp; Schema-Validation Benchmark — Korean Culinary</h1>
+  <p class="subtitle">EN / KO &times; Clean / Noisy &mdash; 8 scenarios &mdash; Jun 13 2026 &mdash; Corrected Report</p>
 
-  <!-- TL;DR -->
-  <div class="tldr">
-    <div class="tldr-label">Summary</div>
-    <p><strong>openai-gpt4o-transcribe</strong> wins on accuracy (lowest CER). <strong>deepgram-nova-3</strong> is cheapest per minute. <strong>deepgram-nova-3</strong> has the lowest latency.</p>
+  <div class="correction-banner">
+    <strong>Corrected rankings.</strong> The original benchmark run contained a metric inversion bug
+    in <code>BenchmarkResult.to_dict()</code> that caused <code>ModelRanker</code> to penalize
+    high schema validity. Composites and rankings below are recomputed directly from raw
+    per-scenario CSVs using the correct weighted formula. <code>src/benchmark.py</code> has been
+    patched. See the <strong>Bug Log</strong> section for the full trace.
   </div>
 
-  <!-- Model Results -->
-  <section>
-    <h2>Model Results</h2>
-    <hr class="rule">
-    <div class="model-grid">
-      
-        <div class="model-card">
-          <div class="model-rank" style="color:var(--clay)">#1</div>
-          <div class="model-name">openai-gpt4o-transcribe</div>
-          <div class="model-stats">
-            <div class="stat-block">
-              <div class="stat-num" style="color:var(--clay)">0.0528</div>
-              <div class="stat-label">CER</div>
-            </div>
-            <div class="stat-block">
-              <div class="stat-num" style="color:var(--clay)">0.1135</div>
-              <div class="stat-label">WER</div>
-            </div>
-            <div class="stat-block">
-              <div class="stat-num">0.9742</div>
-              <div class="stat-label">Loanword Acc</div>
-            </div>
-            <div class="stat-block">
-              <div class="stat-num">1.0000</div>
-              <div class="stat-label">Composite</div>
-            </div>
-          </div>
-          
-          <div class="model-meta">
-            <span class="pill neutral"><span class="k">latency</span><span class="v">4.01s avg</span></span>
-            <span class="pill neutral"><span class="k">cost</span><span class="v">$0.04728</span></span>
-            <span class="pill neutral"><span class="k">$/min</span><span class="v">$0.0060</span></span>
-          </div>
-        </div>
-        
-        <div class="model-card">
-          <div class="model-rank" style="color:var(--olive)">#2</div>
-          <div class="model-name">deepgram-nova-3</div>
-          <div class="model-stats">
-            <div class="stat-block">
-              <div class="stat-num" style="color:var(--clay)">0.0773</div>
-              <div class="stat-label">CER</div>
-            </div>
-            <div class="stat-block">
-              <div class="stat-num" style="color:var(--clay)">0.1784</div>
-              <div class="stat-label">WER</div>
-            </div>
-            <div class="stat-block">
-              <div class="stat-num">0.9710</div>
-              <div class="stat-label">Loanword Acc</div>
-            </div>
-            <div class="stat-block">
-              <div class="stat-num">0.0000</div>
-              <div class="stat-label">Composite</div>
-            </div>
-          </div>
-          
-          <div class="model-meta">
-            <span class="pill neutral"><span class="k">latency</span><span class="v">1.97s avg</span></span>
-            <span class="pill neutral"><span class="k">cost</span><span class="v">$0.04098</span></span>
-            <span class="pill neutral"><span class="k">$/min</span><span class="v">$0.0052</span></span>
-          </div>
-        </div>
-        
-    </div>
-    <div class="legend" style="margin-top:16px">
-      <span><span class="legend-dot" style="background:var(--olive)"></span>Excellent (CER ≤ 0.05)</span>
-      <span><span class="legend-dot" style="background:var(--clay)"></span>Good (CER ≤ 0.10)</span>
-      <span><span class="legend-dot" style="background:var(--rust)"></span>Needs improvement (&gt; 0.10)</span>
-    </div>
-  </section>
+  <div class="meta-row">
+    <div class="meta-chip"><strong>8</strong> scenarios</div>
+    <div class="meta-chip"><strong>3</strong> models tested</div>
+    <div class="meta-chip"><strong>40 · 35 · 25</strong> Schema · Loanword · Cultural weights</div>
+    <div class="meta-chip"><strong>Cultural score = 0</strong> judge stub inactive</div>
+  </div>
 
-  <!-- Per-sample breakdown -->
-  <section>
-    <h2>Per-Sample Breakdown</h2>
-    <hr class="rule">
-    <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">
-      <span style="display:inline-block;width:10px;height:10px;background:#FFFBEB;border:1px solid var(--gray-300);border-radius:2px;margin-right:5px;vertical-align:middle"></span>
-      Highlighted rows are noisy clips. Lat = API latency in seconds.
+  <h2>Corrected Rankings</h2>
+
+  <div class="podium">
+
+    <div class="model-card rank-1">
+      <div class="rank-badge">1</div>
+      <div class="model-id">anthropic/claude-sonnet-4.6</div>
+      <div class="model-display">Claude Sonnet 4.6</div>
+      <div class="composite">0.7055 <small>corrected composite</small></div>
+      <div class="score-row">
+        <span class="score-label">Schema validity</span>
+        <span class="score-val hi">0.9886</span>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Loanword preservation</span>
+        <span class="score-val hi">0.8859</span>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Cultural score</span>
+        <span class="score-val dim">0.0000 (stub)</span>
+      </div>
+    </div>
+
+    <div class="model-card rank-2">
+      <div class="rank-badge">2</div>
+      <div class="model-id">google/gemini-2.5-pro</div>
+      <div class="model-display">Gemini 2.5 Pro</div>
+      <div class="composite">0.6849 <small>corrected composite</small></div>
+      <div class="score-row">
+        <span class="score-label">Schema validity</span>
+        <span class="score-val mid">0.9350</span>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Loanword preservation</span>
+        <span class="score-val hi">0.8882</span>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Cultural score</span>
+        <span class="score-val dim">0.0000 (stub)</span>
+      </div>
+    </div>
+
+    <div class="model-card rank-3">
+      <div class="rank-badge">3</div>
+      <div class="model-id">qwen/qwen3-max-thinking</div>
+      <div class="model-display">Qwen3 Max Thinking</div>
+      <div class="composite">0.6583 <small>corrected composite</small></div>
+      <div class="score-row">
+        <span class="score-label">Schema validity</span>
+        <span class="score-val lo">0.9149</span>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Loanword preservation</span>
+        <span class="score-val mid">0.8352</span>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Cultural score</span>
+        <span class="score-val dim">0.0000 (stub)</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <strong>Original (bugged) ranking was:</strong> Gemini #1 (0.7658) &rarr; Qwen #2 (0.5250) &rarr; Claude #3 (0.4600).
+    The inversion penalized Claude for having the <em>highest</em> schema validity.
+    See Bug Log below.
+  </div>
+
+  <h2>Cross-Model Summary</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Claude Sonnet 4.6</th>
+        <th>Gemini 2.5 Pro</th>
+        <th>Qwen3 Max Thinking</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Composite (corrected)</strong></td>
+        <td class="hi"><strong>0.7055</strong></td>
+        <td>0.6849</td>
+        <td class="mid">0.6583</td>
+      </tr>
+      <tr>
+        <td>Schema validity (avg)</td>
+        <td class="hi">0.9886</td>
+        <td class="mid">0.9350</td>
+        <td class="lo">0.9149</td>
+      </tr>
+      <tr>
+        <td>Loanword preservation (avg)</td>
+        <td>0.8859</td>
+        <td class="hi">0.8882</td>
+        <td class="lo">0.8352</td>
+      </tr>
+      <tr>
+        <td>Schema &mdash; EN scenarios</td>
+        <td class="hi">1.0000</td>
+        <td class="mid">0.9164</td>
+        <td class="lo">0.8473</td>
+      </tr>
+      <tr>
+        <td>Schema &mdash; KO scenarios</td>
+        <td class="mid">0.9773</td>
+        <td class="mid">0.9536</td>
+        <td class="hi">0.9826</td>
+      </tr>
+      <tr>
+        <td>Loanword &mdash; EN scenarios</td>
+        <td class="mid">0.7719</td>
+        <td class="mid">0.7764</td>
+        <td class="lo">0.6704</td>
+      </tr>
+      <tr>
+        <td>Loanword &mdash; KO scenarios</td>
+        <td class="hi">1.0000</td>
+        <td class="hi">1.0000</td>
+        <td class="hi">1.0000</td>
+      </tr>
+      <tr>
+        <td>Noise delta (schema Δ clean&rarr;noisy)</td>
+        <td class="mid">&minus;0.0227</td>
+        <td class="hi">&minus;0.0122</td>
+        <td class="hi">+0.0058</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Per-Scenario: Claude Sonnet 4.6</h2>
+
+  <div class="metric-grid">
+    <div class="metric-box"><div class="val hi">0.9886</div><div class="lbl">Avg schema validity</div></div>
+    <div class="metric-box"><div class="val">0.8859</div><div class="lbl">Avg loanword pres.</div></div>
+    <div class="metric-box"><div class="val">1.0000</div><div class="lbl">Schema — EN</div></div>
+    <div class="metric-box"><div class="val">0.9773</div><div class="lbl">Schema — KO</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Scenario</th><th>Schema</th><th>Loanword</th><th>loanwords_detected</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>en-a-clean</td><td class="hi">1.0000</td><td class="mid">0.7379</td><td><code>세서미 오일</code> — Konglish form ✓</td></tr>
+      <tr><td>en-a-noise <span class="tag tag-noise">noisy</span></td><td class="hi">1.0000</td><td class="mid">0.8058</td><td><code>세서미 오일</code> ✓</td></tr>
+      <tr><td>en-b-clean</td><td class="hi">1.0000</td><td class="mid">0.7456</td><td><code>세서미 오일</code> ✓</td></tr>
+      <tr><td>en-b-noise <span class="tag tag-noise">noisy</span></td><td class="hi">1.0000</td><td class="mid">0.7982</td><td><code>세서미 오일</code> ✓</td></tr>
+      <tr><td>ko-a-clean <span class="tag tag-ko">ko</span></td><td class="hi">1.0000</td><td class="hi">1.0000</td><td><code>프라이팬</code> ✓</td></tr>
+      <tr><td>ko-a-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td><td class="hi">1.0000</td><td class="hi">1.0000</td><td><code>프라이팬</code> ✓</td></tr>
+      <tr><td>ko-b-clean <span class="tag tag-ko">ko</span></td><td class="hi">1.0000</td><td class="hi">1.0000</td><td><code>레시피</code> ✓</td></tr>
+      <tr><td>ko-b-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td><td class="mid">0.9091</td><td class="hi">1.0000</td><td><code>레시피</code> ✓ &mdash; 1 ingredient <code>quantity=null</code></td></tr>
+      <tr class="avg-row"><td>Average</td><td>0.9886</td><td>0.8859</td><td>Consistent Konglish register across all scenarios</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Per-Scenario: Gemini 2.5 Pro</h2>
+
+  <div class="metric-grid">
+    <div class="metric-box"><div class="val mid">0.9350</div><div class="lbl">Avg schema validity</div></div>
+    <div class="metric-box"><div class="val hi">0.8882</div><div class="lbl">Avg loanword pres.</div></div>
+    <div class="metric-box"><div class="val mid">0.9164</div><div class="lbl">Schema — EN</div></div>
+    <div class="metric-box"><div class="val">0.9536</div><div class="lbl">Schema — KO</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Scenario</th><th>Schema</th><th>Loanword</th><th>loanwords_detected</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>en-a-clean</td><td class="hi">0.9592</td><td class="mid">0.8252</td><td><code>sesame oil</code> — English form, not Konglish</td></tr>
+      <tr><td>en-a-noise <span class="tag tag-noise">noisy</span></td><td class="hi">0.9565</td><td class="mid">0.8155</td><td>Empty — word present in recipe body text only</td></tr>
+      <tr><td>en-b-clean</td><td class="mid">0.8864</td><td class="mid">0.7281</td><td><code>sesame oil</code>, <code>recipe</code> — English forms</td></tr>
+      <tr><td>en-b-noise <span class="tag tag-noise">noisy</span></td><td class="mid">0.8636</td><td class="mid">0.7368</td><td>Empty — word present in recipe body text only</td></tr>
+      <tr><td>ko-a-clean <span class="tag tag-ko">ko</span></td><td class="hi">1.0000</td><td class="hi">1.0000</td><td><code>프라이팬</code> ✓</td></tr>
+      <tr><td>ko-a-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td><td class="mid">0.9767</td><td class="hi">1.0000</td><td><code>프라이팬</code> ✓</td></tr>
+      <tr><td>ko-b-clean <span class="tag tag-ko">ko</span></td><td class="mid">0.9189</td><td class="hi">1.0000</td><td><code>레시피</code> ✓</td></tr>
+      <tr><td>ko-b-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td><td class="mid">0.9189</td><td class="hi">1.0000</td><td><code>레시피</code> ✓</td></tr>
+      <tr class="avg-row"><td>Average</td><td>0.9350</td><td>0.8882</td><td>EN loanword form used; body text rescues score</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Per-Scenario: Qwen3 Max Thinking</h2>
+
+  <div class="metric-grid">
+    <div class="metric-box"><div class="val lo">0.9149</div><div class="lbl">Avg schema validity</div></div>
+    <div class="metric-box"><div class="val mid">0.8352</div><div class="lbl">Avg loanword pres.</div></div>
+    <div class="metric-box"><div class="val lo">0.8473</div><div class="lbl">Schema — EN</div></div>
+    <div class="metric-box"><div class="val hi">0.9826</div><div class="lbl">Schema — KO</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Scenario</th><th>Schema</th><th>Loanword</th><th>loanwords_detected</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>en-a-clean</td><td class="lo">0.8222</td><td class="mid">0.7282</td><td><code>sesame oil</code>, <code>soy sauce</code> — English forms</td></tr>
+      <tr><td>en-a-noise <span class="tag tag-noise">noisy</span></td><td class="lo">0.8222</td><td class="mid">0.6990</td><td>Same English forms; more null fields</td></tr>
+      <tr><td>en-b-clean</td><td class="lo">0.8723</td><td class="lo">0.6491</td><td>Over-detected: <code>미역국</code>, <code>miyeokguk</code>, <code>의미</code></td></tr>
+      <tr><td>en-b-noise <span class="tag tag-noise">noisy</span></td><td class="lo">0.8723</td><td class="lo">0.6053</td><td>Same over-detection pattern</td></tr>
+      <tr><td>ko-a-clean <span class="tag tag-ko">ko</span></td><td class="mid">0.9535</td><td class="hi">1.0000</td><td>Empty — <code>프라이팬</code> in recipe body only</td></tr>
+      <tr><td>ko-a-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td><td class="mid">0.9767</td><td class="hi">1.0000</td><td>Empty — <code>프라이팬</code> in recipe body only</td></tr>
+      <tr><td>ko-b-clean <span class="tag tag-ko">ko</span></td><td class="hi">1.0000</td><td class="hi">1.0000</td><td><code>레시피</code> ✓</td></tr>
+      <tr><td>ko-b-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td><td class="hi">1.0000</td><td class="hi">1.0000</td><td><code>레시피</code> ✓</td></tr>
+      <tr class="avg-row"><td>Average</td><td>0.9149</td><td>0.8352</td><td>Inconsistent register; largest EN–KO gap</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Evaluation Notes</h2>
+
+  <table>
+    <thead>
+      <tr><th>Dimension</th><th>Finding</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Schema completeness</strong></td>
+        <td>Claude is the only model to achieve 1.000 on all EN scenarios. EN schema is harder — more optional fields left null. KO schemas are consistently fuller across all models.</td>
+      </tr>
+      <tr>
+        <td><strong>Loanword register</strong></td>
+        <td>Claude uses Korean-script Konglish forms (<code>세서미 오일</code>). Gemini and Qwen use English forms (<code>sesame oil</code>). The scorer accepts both via body-text search, but the field intent is to preserve the <em>Konglish</em> register specifically.</td>
+      </tr>
+      <tr>
+        <td><strong>KO loanword unanimity</strong></td>
+        <td>All models score 1.000 on KO loanword preservation. Korean-script loanwords (<code>프라이팬</code>, <code>레시피</code>) are visually distinct and consistently present in output text, even when absent from <code>loanwords_detected</code>.</td>
+      </tr>
+      <tr>
+        <td><strong>Noise robustness</strong></td>
+        <td>Gemini shows the smallest schema degradation under noise (&Delta; &minus;0.012). Qwen marginally improves on noisy KO (+0.006), likely due to extended-thinking engagement on ambiguous input.</td>
+      </tr>
+      <tr>
+        <td><strong>Qwen language gap</strong></td>
+        <td>Qwen's EN schema (0.847) is 0.135 below its KO schema (0.983) — the largest language gap. A KO-only benchmark would significantly overstate Qwen's multilingual capability.</td>
+      </tr>
+      <tr>
+        <td><strong>Cultural score</strong></td>
+        <td>Stub at 0 for all models. Activating the judge LLM is the highest-leverage change for the next run; qualitative reading of <code>hidden_intent</code> and <code>cultural_notes</code> in the CSVs suggests Claude would lead this axis.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Bug Log — Metric Inversion in <code>src/benchmark.py</code></h2>
+
+  <div class="bug-log">
+
+    <h3>Root cause</h3>
+    <p>
+      The original <code>BenchmarkResult.to_dict()</code> passed raw
+      <code class="em">avg_schema_validity</code> (higher-is-better) directly into the
+      <code>"cer"</code> slot of <code>ModelRanker</code>:
     </p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Sample</th>
-            <th colspan="3" style="border-left:2px solid var(--gray-300);color:var(--clay)">openai-gpt4o-transcribe</th><th colspan="3" style="border-left:2px solid var(--gray-300);color:var(--olive)">deepgram-nova-3</th>
-          </tr>
-          <tr>
-            <th style="color:var(--gray-300)"></th>
-            <th style="border-left:2px solid var(--gray-300)">CER</th><th>WER</th><th>Lat</th><th style="border-left:2px solid var(--gray-300)">CER</th><th>WER</th><th>Lat</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-        <tr class="">
-          <td style="font-family:var(--mono);font-size:13px;white-space:nowrap">
-            en-a-clean 
-          </td>
-          
-                  <td style="border-left:2px solid var(--gray-300);color:var(--olive);font-weight:600;font-family:var(--mono)">0.0401</td>
-                  <td style="color:var(--olive);font-weight:600;font-family:var(--mono)">0.0473</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">4.12s</td>
-                
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0518</td>
-                  <td style="color:var(--olive);font-weight:600;font-family:var(--mono)">0.0676</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">1.5s</td>
-                
-        </tr>
-        
-        <tr class="noisy-row">
-          <td style="font-family:var(--mono);font-size:13px;white-space:nowrap">
-            en-a-noise <span class="pill noise-pill">noisy</span>
-          </td>
-          
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0518</td>
-                  <td style="color:var(--olive);font-weight:600;font-family:var(--mono)">0.0878</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">3.33s</td>
-                
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0968</td>
-                  <td style="color:var(--clay);font-weight:600;font-family:var(--mono)">0.1622</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">4.45s</td>
-                
-        </tr>
-        
-        <tr class="">
-          <td style="font-family:var(--mono);font-size:13px;white-space:nowrap">
-            en-b-clean 
-          </td>
-          
-                  <td style="border-left:2px solid var(--gray-300);color:var(--olive);font-weight:600;font-family:var(--mono)">0.0472</td>
-                  <td style="color:var(--olive);font-weight:600;font-family:var(--mono)">0.0818</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">4.04s</td>
-                
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0730</td>
-                  <td style="color:var(--clay);font-weight:600;font-family:var(--mono)">0.1321</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">2.91s</td>
-                
-        </tr>
-        
-        <tr class="noisy-row">
-          <td style="font-family:var(--mono);font-size:13px;white-space:nowrap">
-            en-b-noise <span class="pill noise-pill">noisy</span>
-          </td>
-          
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0572</td>
-                  <td style="color:var(--clay);font-weight:600;font-family:var(--mono)">0.1006</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">4.24s</td>
-                
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0730</td>
-                  <td style="color:var(--clay);font-weight:600;font-family:var(--mono)">0.1195</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">0.99s</td>
-                
-        </tr>
-        
-        <tr class="">
-          <td style="font-family:var(--mono);font-size:13px;white-space:nowrap">
-            ko-a-clean 
-          </td>
-          
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0548</td>
-                  <td style="color:var(--rust);font-weight:600;font-family:var(--mono)">0.2079</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">4.04s</td>
-                
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0685</td>
-                  <td style="color:var(--rust);font-weight:600;font-family:var(--mono)">0.2376</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">1.99s</td>
-                
-        </tr>
-        
-        <tr class="noisy-row">
-          <td style="font-family:var(--mono);font-size:13px;white-space:nowrap">
-            ko-a-noise <span class="pill noise-pill">noisy</span>
-          </td>
-          
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0651</td>
-                  <td style="color:var(--clay);font-weight:600;font-family:var(--mono)">0.1980</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">4.03s</td>
-                
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0753</td>
-                  <td style="color:var(--rust);font-weight:600;font-family:var(--mono)">0.3168</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">0.92s</td>
-                
-        </tr>
-        
-        <tr class="">
-          <td style="font-family:var(--mono);font-size:13px;white-space:nowrap">
-            ko-b-clean 
-          </td>
-          
-                  <td style="border-left:2px solid var(--gray-300);color:var(--olive);font-weight:600;font-family:var(--mono)">0.0337</td>
-                  <td style="color:var(--olive);font-weight:600;font-family:var(--mono)">0.0690</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">4.1s</td>
-                
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0599</td>
-                  <td style="color:var(--clay);font-weight:600;font-family:var(--mono)">0.1638</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">2.23s</td>
-                
-        </tr>
-        
-        <tr class="noisy-row">
-          <td style="font-family:var(--mono);font-size:13px;white-space:nowrap">
-            ko-b-noise <span class="pill noise-pill">noisy</span>
-          </td>
-          
-                  <td style="border-left:2px solid var(--gray-300);color:var(--clay);font-weight:600;font-family:var(--mono)">0.0899</td>
-                  <td style="color:var(--clay);font-weight:600;font-family:var(--mono)">0.1810</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">4.2s</td>
-                
-                  <td style="border-left:2px solid var(--gray-300);color:var(--rust);font-weight:600;font-family:var(--mono)">0.1423</td>
-                  <td style="color:var(--rust);font-weight:600;font-family:var(--mono)">0.3276</td>
-                  <td style="color:var(--gray-500);font-family:var(--mono)">0.76s</td>
-                
-        </tr>
-        
-        </tbody>
-      </table>
-    </div>
-  </section>
+    <pre># Bug — code that produced the original results.csv
+"cer": self.avg_schema_validity,        # ← no inversion
+"wer": self.avg_cultural_score / 5.0,   # ← no inversion</pre>
 
-  <!-- Noise impact -->
-  <section>
-    <h2>Noise Impact</h2>
-    <hr class="rule">
-    <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Average CER on clean vs noisy clips. Lower Δ = more noise-robust.</p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Model</th>
-            <th>Clean avg CER</th>
-            <th>Noisy avg CER</th>
-            <th>Degradation Δ</th>
-          </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td style="color:var(--clay);font-weight:600">openai-gpt4o-transcribe</td>
-          <td style="font-family:var(--mono);color:var(--olive)">0.0440</td>
-          <td style="font-family:var(--mono);color:var(--rust)">0.0660</td>
-          <td style="font-family:var(--mono);font-weight:700;color:var(--clay)">+0.0221</td>
-        </tr>
-        
-        <tr>
-          <td style="color:var(--olive);font-weight:600">deepgram-nova-3</td>
-          <td style="font-family:var(--mono);color:var(--olive)">0.0633</td>
-          <td style="font-family:var(--mono);color:var(--rust)">0.0969</td>
-          <td style="font-family:var(--mono);font-weight:700;color:var(--rust)">+0.0336</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Cost & Latency -->
-  <section>
-    <h2>Cost &amp; Latency</h2>
-    <hr class="rule">
-    <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">
-      Cost = audio duration × price/min. Latency = API response time only — rate-limit pauses excluded.
+    <p>
+      <code>ModelRanker.normalize_metric()</code> at <code>ranking.py:166</code> normalizes
+      <code>cer</code> with <span class="em">lower_is_better=True</span>:
     </p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Model</th>
-            <th>$/min</th>
-            <th>Audio</th>
-            <th>Est. cost</th>
-            <th>Avg latency</th>
-            <th>Total latency</th>
-          </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td style="color:var(--clay);font-weight:600">openai-gpt4o-transcribe</td>
-          <td style="font-family:var(--mono)">$0.0060</td>
-          <td style="font-family:var(--mono)">7.88 min</td>
-          <td style="font-family:var(--mono);font-weight:600">$0.047279</td>
-          <td style="font-family:var(--mono)">4.01s</td>
-          <td style="font-family:var(--mono)">32.10s</td>
-        </tr>
-        
-        <tr>
-          <td style="color:var(--olive);font-weight:600">deepgram-nova-3</td>
-          <td style="font-family:var(--mono)">$0.0052</td>
-          <td style="font-family:var(--mono)">7.88 min</td>
-          <td style="font-family:var(--mono);font-weight:600">$0.040975</td>
-          <td style="font-family:var(--mono)">1.97s</td>
-          <td style="font-family:var(--mono)">15.75s</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+    <pre>norm = (v - min_val) / (max_val - min_val)
+if lower_is_better:
+    norm = 1.0 - norm   # lowest raw value → 1.0 (best rank)</pre>
 
-  <!-- Methodology -->
-  <section>
-    <h2>Methodology</h2>
-    <hr class="rule">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px 32px">
-      <div>
-        <p style="font-weight:600;margin-bottom:4px;color:var(--slate)">CER — Character Error Rate</p>
-        <p style="font-size:13px;color:var(--gray-500);margin:0">Primary metric for Korean. Spaces stripped before comparison — Korean spacing is inconsistent across models. Follows KsponSpeech evaluation standard.</p>
-      </div>
-      <div>
-        <p style="font-weight:600;margin-bottom:4px;color:var(--slate)">WER — Word Error Rate</p>
-        <p style="font-size:13px;color:var(--gray-500);margin:0">Secondary metric. Less reliable for Korean due to ambiguous word boundaries. Use CER as primary for Korean content.</p>
-      </div>
-      <div>
-        <p style="font-weight:600;margin-bottom:4px;color:var(--slate)">Loanword Accuracy</p>
-        <p style="font-size:13px;color:var(--gray-500);margin:0">Accuracy on English loanwords and code-switched terms (오븐, 레시피, 간 맞추기). Critical for kitchen use case.</p>
-      </div>
-      <div>
-        <p style="font-weight:600;margin-bottom:4px;color:var(--slate)">Composite Score</p>
-        <p style="font-size:13px;color:var(--gray-500);margin:0">Weighted: CER 55% + WER 30% + Loanword 15%. Relative between models. Speed excluded — measures API latency, not model quality.</p>
-      </div>
-    </div>
-  </section>
+    <h3>Effect on each model</h3>
+    <pre>Schema validity inputs (raw, no inversion):
+  Claude  = 0.9886  →  <span class="wrong">cer_norm = 0.000</span>  ← penalized for highest schema
+  Gemini  = 0.9350  →  cer_norm = 0.273
+  Qwen    = 0.9149  →  <span class="wrong">cer_norm = 1.000</span>  ← rewarded for lowest schema
 
-  <footer>
-    korean-asr-benchmark &nbsp;·&nbsp; May 31, 2026
-  </footer>
+Cultural WER = 0.0 for all → wer_norm = 0.5 for all (tie; no differentiation)
+
+Loanword (correctly normalized, lower_is_better=False):
+  Gemini  = 0.8882  →  loanword_norm = 1.000
+  Claude  = 0.8859  →  loanword_norm = 0.957
+  Qwen    = 0.8352  →  loanword_norm = 0.000
+
+Buggy composite (0.40·cer_norm + 0.25·wer_norm + 0.35·loanword_norm):
+  <span class="wrong">Gemini  → 0.109 + 0.125 + 0.350 = 0.7658  rank 1</span>
+  <span class="wrong">Qwen    → 0.400 + 0.125 + 0.000 = 0.5250  rank 2</span>
+  <span class="wrong">Claude  → 0.000 + 0.125 + 0.335 = 0.4600  rank 3</span></pre>
+
+    <h3>Correct formula (raw per-scenario CSV averages)</h3>
+    <pre>Correct composite = 0.40 × schema + 0.35 × loanword + 0.25 × cultural
+  <span class="correct">Claude  → 0.3954 + 0.3101 + 0 = 0.7055  rank 1</span>
+  <span class="correct">Gemini  → 0.3740 + 0.3109 + 0 = 0.6849  rank 2</span>
+  <span class="correct">Qwen    → 0.3660 + 0.2923 + 0 = 0.6583  rank 3</span></pre>
+
+    <h3>Fix (current <code>src/benchmark.py</code>)</h3>
+    <pre>"cer": 1.0 - self.avg_schema_validity,          # lower = more valid ✓
+"wer": 1.0 - (self.avg_cultural_score / 5.0),   # lower = higher judge score ✓
+"loanword_accuracy": self.avg_loanword_score,    # already higher-is-better ✓</pre>
+
+    <p>Run <code>python -m src.main</code> to regenerate <code>results.csv</code> with correct rankings.</p>
+
+  </div>
+
+  <h2>Metrics</h2>
+
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Weight</th><th>What it measures</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Schema Validity</strong></td><td>40%</td>
+        <td>Fraction of <code>BilingualRecipe</code> fields populated including optional fields.
+            Requires &ge;1 ingredient and &ge;1 step.</td>
+      </tr>
+      <tr>
+        <td><strong>Loanword Preservation</strong></td><td>35%</td>
+        <td>Fraction of source Konglish terms found anywhere in the full recipe output.
+            Scores 1.0 when the source has no detectable loanwords.</td>
+      </tr>
+      <tr>
+        <td><strong>Cultural Subtlety</strong></td><td>25%</td>
+        <td>LLM-as-Judge 1&ndash;5 scale. Stubbed at 0 for this run.
+            Set <code>judge_model</code> in <code>config.yaml</code> to activate.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    Corrected Jun 13 2026 &bull; Korean Culinary Translation Benchmark v3.0.0 &bull;
+    Models: anthropic/claude-sonnet-4.6 &middot; google/gemini-2.5-pro &middot; qwen/qwen3-max-thinking &bull;
+    Raw data: <code>results/predictions/*.csv</code>
+  </div>
 
 </div>
 </body>
