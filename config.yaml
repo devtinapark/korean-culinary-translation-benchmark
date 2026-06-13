@@ -1,40 +1,17 @@
-# Multilingual ASR Benchmark — Kitchen Edition
-# Tests models that auto-detect mixed/code-switched language (EN, KO, ES, ZH)
+openrouter_base_url: "https://openrouter.ai/api/v1"
+judge_model: "anthropic/claude-3.7-sonnet"
 
-benchmark:
-  language: "multilingual"
-  device: "cpu"
-
-dataset:
-  audio_dir: "kitchen_samples/audio"
-  transcripts_dir: "kitchen_samples/transcriptions"
-  metadata_file: "kitchen_samples/metadata.json"
-
-# 2 models compared — all API-based, all auto-detect language, all handle code-switching
-# Pricing as of 2025-06 — update if rates change
 models:
+  - id: "anthropic/claude-3.7-sonnet"
+    provider: openrouter
+  - id: "google/gemini-2.5-pro"
+    provider: openrouter
+  - id: "qwen/qwen3-max-thinking"
+    provider: openrouter
 
-  openai-gpt4o-transcribe:
-    type: "api"
-    provider: "openai"
-    model: "gpt-4o-transcribe"
-    cost_per_minute: 0.006
-    # export OPENAI_API_KEY=your_key
+evaluation:
+  schema_validity_weight: 0.40
+  loanword_weight: 0.35
+  cultural_score_weight: 0.25
 
-  deepgram-nova-3:
-    type: "api"
-    provider: "deepgram"
-    model: "nova-3"
-    cost_per_minute: 0.0052  # multilingual (detect_language=true) rate; English-only is $0.0043
-    # export DEEPGRAM_API_KEY=your_key
-
-
-metrics:
-  compute_cer: true
-  compute_wer: true
-  loanword_detection: true
-
-output:
-  results_dir: "results"
-  save_predictions: true
-  generate_report: true
+output_dir: results
