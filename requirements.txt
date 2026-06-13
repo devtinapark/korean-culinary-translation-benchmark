@@ -1,23 +1,7 @@
-# Core
 numpy<2
 pandas>=2.2.0
 pyyaml>=6.0.0
 tqdm>=4.66.0
 requests>=2.31.0
-
-# Audio loading (supports MP3, WAV, FLAC, etc.)
-# Requires ffmpeg: brew install ffmpeg
-pydub>=0.25.0
-soundfile>=0.12.0
-
-# Metrics
-jiwer>=3.0.0
-
-# API clients
 openai>=1.30.0
-requests>=2.31.0
-
-# Optional: local models (requires ~3GB+ download per model)
-# torch>=2.4.0
-# torchaudio>=2.4.0
-# transformers>=4.40.0
+pydantic>=2.0.0
