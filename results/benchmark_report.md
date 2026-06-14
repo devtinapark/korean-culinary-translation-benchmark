@@ -7,13 +7,14 @@
 - **Dataset**: Korean Culinary ASR Transcripts
 - **Scenarios**: 8
 - **Models Tested**: 3
-- **Note**: Composite score is relative — run all models to get meaningful rankings
+- **Note**: Composite score is min-max normalized across this run — relative, not absolute
 
 ## Summary
 
 Evaluates LLM translation quality on unstructured ASR text from spoken Korean/English recipes.
 Each model must extract a structured bilingual recipe, preserve Konglish loanwords verbatim,
 and surface hidden culinary intent behind vague spoken instructions.
+Run 2: metric inversion bug patched; LLM-as-Judge active (`anthropic/claude-sonnet-4.6`).
 
 ## Model Results
 
@@ -23,9 +24,9 @@ and surface hidden culinary intent behind vague spoken instructions.
 
 | Metric | Value |
 |--------|-------|
-| Composite Score | 1.0000 |
-| Schema Validity / Completeness | 0.0055 |
-| Cultural Subtlety Score (Judge) | 0.0250 |
+| Composite Score (absolute) | 0.9514 |
+| Schema Validity / Completeness | 0.9945 |
+| Cultural Subtlety Score (Judge, 1–5) | 4.875 |
 | Loanword Preservation | 0.8854 |
 
 **Noise impact on schema validity:**
@@ -49,15 +50,23 @@ and surface hidden culinary intent behind vague spoken instructions.
 | ko-b-clean | 1.0000 | 1.0000 |
 | ko-b-noise | 1.0000 | 1.0000 |
 
+**Loanword register (EN scenarios):** Claude consistently used `세서미 오일` (Korean-script
+Konglish form) while Gemini and Qwen used English "sesame oil". Both are valid — `참기름`
+is the more common traditional Korean term, but `세서미 오일` is an accepted Konglish form
+in modern Korean cooking. Claude's commitment to Korean-script form even on EN-source
+scenarios is the more interesting behavioral finding here.
+
+---
+
 ### 2. google/gemini-2.5-pro
 
 **Combined metrics (all 8 scenarios):**
 
 | Metric | Value |
 |--------|-------|
-| Composite Score | 0.2821 |
-| Schema Validity / Completeness | 0.0659 |
-| Cultural Subtlety Score (Judge) | 0.1500 |
+| Composite Score (absolute) | 0.8918 |
+| Schema Validity / Completeness | 0.9341 |
+| Cultural Subtlety Score (Judge, 1–5) | 4.250 |
 | Loanword Preservation | 0.8733 |
 
 **Noise impact on schema validity:**
@@ -81,13 +90,50 @@ and surface hidden culinary intent behind vague spoken instructions.
 | ko-b-clean | 0.9268 | 1.0000 |
 | ko-b-noise | 0.9756 | 1.0000 |
 
+---
+
+### 3. qwen/qwen3-max-thinking
+
+**Combined metrics (all 8 scenarios):**
+
+| Metric | Value |
+|--------|-------|
+| Composite Score (absolute) | 0.8743 |
+| Schema Validity / Completeness | 0.9340 |
+| Cultural Subtlety Score (Judge, 1–5) | 4.250 |
+| Loanword Preservation | 0.8233 |
+
+**Noise impact on schema validity:**
+
+| | Avg Schema Validity |
+|---|---------------------|
+| Clean scenarios | 0.9178 |
+| Noisy scenarios | 0.9502 |
+| Delta (Δ) | +0.0324 |
+
+**Per-scenario breakdown:**
+
+| Scenario | Schema Validity | Loanword Pres. |
+|----------|----------------|----------------|
+| en-a-clean | 0.8222 | 0.7087 |
+| en-a-noise | 0.8667 | 0.6408 |
+| en-b-clean | 0.8723 | 0.5965 |
+| en-b-noise | 0.9574 | 0.6404 |
+| ko-a-clean | 0.9767 | 1.0000 |
+| ko-a-noise | 0.9767 | 1.0000 |
+| ko-b-clean | 1.0000 | 1.0000 |
+| ko-b-noise | 1.0000 | 1.0000 |
+
+
+---
+
 ## Full Rankings
 
-| Rank | Model | Score | Schema Validity | Cultural Score | Loanword Pres. |
-|------|-------|-------|----------------|---------------|----------------|
-| 1 | anthropic/claude-sonnet-4.6 | 1.0000 | 0.0055 | 0.0250 | 0.8854 |
-| 2 | google/gemini-2.5-pro | 0.2821 | 0.0659 | 0.1500 | 0.8733 |
-| 3 | qwen/qwen3-max-thinking | 0.0000 | 0.0660 | 0.1500 | 0.8233 |
+| Rank | Model | Absolute Score | Schema Validity | Cultural (1–5) | Loanword Pres. |
+|------|-------|---------------|----------------|---------------|----------------|
+| 1 | anthropic/claude-sonnet-4.6 | 0.9514 | 0.9945 | 4.88 | 0.8854 |
+| 2 | google/gemini-2.5-pro | 0.8918 | 0.9341 | 4.25 | 0.8733 |
+| 3 | qwen/qwen3-max-thinking | 0.8743 | 0.9340 | 4.25 | 0.8233 |
 
 ## Metrics Explanation
 
@@ -105,12 +151,12 @@ and surface hidden culinary intent behind vague spoken instructions.
 
 - **Cultural Subtlety Score (LLM-as-Judge)**: 1–5 scale scored by a judge LLM
   - 5 = all loanwords retained, hidden intent surfaced, cultural notes meaningful
-  - 0 = judge stub not yet activated
+  - Judge model: `anthropic/claude-sonnet-4.6` (set via `judge_model` in `config.yaml`)
   - Higher is better
 
 ### Composite Score
 
-Weighted combination (scores are relative — run all models for meaningful rankings):
+Weighted combination — min-max normalized (scores are relative within this run):
 - Schema validity: 40%
 - Loanword preservation: 35%
 - Cultural subtlety (judge): 25%

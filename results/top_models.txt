@@ -1,5 +1,9 @@
-LLM Translation Benchmark — Top Models
+LLM Translation Benchmark — Top Models (Run 2, Judge Active)
 ==================================================
 
-1. anthropic/claude-sonnet-4.6
-2. google/gemini-2.5-pro
+1. anthropic/claude-sonnet-4.6   composite: 0.9514  schema: 0.9945  cultural: 4.88/5  loanword: 0.8854
+2. google/gemini-2.5-pro         composite: 0.8918  schema: 0.9341  cultural: 4.25/5  loanword: 0.8733
+3. qwen/qwen3-max-thinking       composite: 0.8743  schema: 0.9340  cultural: 4.25/5  loanword: 0.8233
+
+Composite = 0.40 × schema + 0.35 × loanword + 0.25 × (cultural/5)
+Comparable across runs. All three models score above 0.87.

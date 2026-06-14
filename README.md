@@ -17,7 +17,7 @@ Models compared via [OpenRouter](https://openrouter.ai):
 |---|---|---|
 | Schema validity / completeness | 40% | Pydantic validation + filled optional fields |
 | Loanword preservation | 35% | Input Konglish present verbatim in output |
-| Cultural subtlety (LLM-as-Judge) | 25% | 1–5 score; stubbed — wire `judge_model` in `config.yaml` to activate |
+| Cultural subtlety (LLM-as-Judge) | 25% | 1–5 score; judge model set via `judge_model` in `config.yaml` |
 
 Each model receives 8 text scenarios (En/Ko × A/B × Clean/Noisy) and must return a validated `BilingualRecipe` JSON object.
 

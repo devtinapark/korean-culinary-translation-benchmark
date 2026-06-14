@@ -15,9 +15,10 @@ a fully structured bilingual recipe. You MUST:
 
 1. Preserve ALL loanwords (Konglish) exactly as spoken — phonetically transcribed English words \
 embedded in Korean text, such as 오븐(oven), 피자(pizza), 레시피(recipe), 버터(butter), \
-파스타(pasta), 프라이팬(frying pan). Do NOT translate them away — list them verbatim in \
-`loanwords_detected`. Note: native Korean words like 참기름 (sesame oil) are NOT loanwords \
-and should use their correct Korean form, not a phonetic transliteration.
+파스타(pasta), 프라이팬(frying pan), 세서미 오일(sesame oil). Do NOT translate them away — \
+list them verbatim in `loanwords_detected`. Note: ingredients may have both a traditional \
+Korean form and a Konglish form (e.g., 참기름 or 세서미 오일 for sesame oil) — both are \
+valid; preserve whichever form is used or implied by the source register.
 2. Extract the HIDDEN CULINARY INTENT behind vague instructions (e.g., "until it looks right" → \
 hidden_intent: "visual doneness cue that develops with experience; watch for color and texture \
 changes rather than relying on timing").
