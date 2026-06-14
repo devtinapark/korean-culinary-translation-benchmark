@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LLM Translation Benchmark — Korean Culinary (Corrected)</title>
+  <title>LLM Translation Benchmark — Korean Culinary</title>
   <style>
     :root {
       --bg: #fafaf8;
@@ -74,7 +74,7 @@
       margin-bottom: 28px;
     }
 
-    .correction-banner {
+    .info-banner {
       background: var(--green-bg);
       border: 1.5px solid var(--green-border);
       border-radius: 10px;
@@ -84,7 +84,7 @@
       color: #1a3a1a;
     }
 
-    .correction-banner strong {
+    .info-banner strong {
       color: var(--green-border);
     }
 
@@ -401,25 +401,25 @@
   <div class="page">
 
     <h1>LLM Translation &amp; Schema-Validation Benchmark — Korean Culinary</h1>
-    <p class="subtitle">EN / KO &times; Clean / Noisy &mdash; 8 scenarios &mdash; Jun 13 2026 &mdash; Corrected Report
-    </p>
+    <p class="subtitle">EN / KO &times; Clean / Noisy &mdash; 8 scenarios &mdash; Jun 13 2026 &mdash; Run 2 (Judge
+      Active)</p>
 
-    <div class="correction-banner">
-      <strong>Corrected rankings.</strong> The original benchmark run contained a metric inversion bug
-      in <code>BenchmarkResult.to_dict()</code> that caused <code>ModelRanker</code> to penalize
-      high schema validity. Composites and rankings below are recomputed directly from raw
-      per-scenario CSVs using the correct weighted formula. <code>src/benchmark.py</code> has been
-      patched. See the <strong>Bug Log</strong> section for the full trace.
+    <div class="info-banner">
+      <strong>Run 2 — LLM-as-Judge active.</strong> The metric inversion bug has been patched and the
+      cultural subtlety judge (<code>anthropic/claude-sonnet-4.6</code>) is now live.
+      Composite scores are <strong>absolute</strong>: <code>0.40 × schema + 0.35 × loanword + 0.25 × (cultural/5)</code>
+      — directly comparable across runs, unlike the min-max normalized score that
+      <code>ModelRanker</code> outputs internally. See the <strong>Bug Log</strong> for the original ranking error.
     </div>
 
     <div class="meta-row">
       <div class="meta-chip"><strong>8</strong> scenarios</div>
       <div class="meta-chip"><strong>3</strong> models tested</div>
       <div class="meta-chip"><strong>40 · 35 · 25</strong> Schema · Loanword · Cultural weights</div>
-      <div class="meta-chip"><strong>Cultural score = 0</strong> judge stub inactive</div>
+      <div class="meta-chip"><strong>Judge active</strong> claude-sonnet-4.6</div>
     </div>
 
-    <h2>Corrected Rankings</h2>
+    <h2>Rankings</h2>
 
     <div class="podium">
 
@@ -427,18 +427,18 @@
         <div class="rank-badge">1</div>
         <div class="model-id">anthropic/claude-sonnet-4.6</div>
         <div class="model-display">Claude Sonnet 4.6</div>
-        <div class="composite">0.7055 <small>corrected composite</small></div>
+        <div class="composite">0.9514 <small>composite (absolute)</small></div>
         <div class="score-row">
           <span class="score-label">Schema validity</span>
-          <span class="score-val hi">0.9886</span>
+          <span class="score-val hi">0.9945</span>
         </div>
         <div class="score-row">
           <span class="score-label">Loanword preservation</span>
-          <span class="score-val hi">0.8859</span>
+          <span class="score-val hi">0.8854</span>
         </div>
         <div class="score-row">
-          <span class="score-label">Cultural score</span>
-          <span class="score-val dim">0.0000 (stub)</span>
+          <span class="score-label">Cultural score (1–5)</span>
+          <span class="score-val hi">4.88</span>
         </div>
       </div>
 
@@ -446,18 +446,18 @@
         <div class="rank-badge">2</div>
         <div class="model-id">google/gemini-2.5-pro</div>
         <div class="model-display">Gemini 2.5 Pro</div>
-        <div class="composite">0.6849 <small>corrected composite</small></div>
+        <div class="composite">0.8918 <small>composite (absolute)</small></div>
         <div class="score-row">
           <span class="score-label">Schema validity</span>
-          <span class="score-val mid">0.9350</span>
+          <span class="score-val mid">0.9341</span>
         </div>
         <div class="score-row">
           <span class="score-label">Loanword preservation</span>
-          <span class="score-val hi">0.8882</span>
+          <span class="score-val mid">0.8733</span>
         </div>
         <div class="score-row">
-          <span class="score-label">Cultural score</span>
-          <span class="score-val dim">0.0000 (stub)</span>
+          <span class="score-label">Cultural score (1–5)</span>
+          <span class="score-val mid">4.25</span>
         </div>
       </div>
 
@@ -465,28 +465,27 @@
         <div class="rank-badge">3</div>
         <div class="model-id">qwen/qwen3-max-thinking</div>
         <div class="model-display">Qwen3 Max Thinking</div>
-        <div class="composite">0.6583 <small>corrected composite</small></div>
+        <div class="composite">0.8743 <small>composite (absolute)</small></div>
         <div class="score-row">
           <span class="score-label">Schema validity</span>
-          <span class="score-val lo">0.9149</span>
+          <span class="score-val lo">0.9340</span>
         </div>
         <div class="score-row">
           <span class="score-label">Loanword preservation</span>
-          <span class="score-val mid">0.8352</span>
+          <span class="score-val lo">0.8233</span>
         </div>
         <div class="score-row">
-          <span class="score-label">Cultural score</span>
-          <span class="score-val dim">0.0000 (stub)</span>
+          <span class="score-label">Cultural score (1–5)</span>
+          <span class="score-val mid">4.25</span>
         </div>
       </div>
 
     </div>
 
     <div class="note">
-      <strong>Original (bugged) ranking was:</strong> Gemini #1 (0.7658) &rarr; Qwen #2 (0.5250) &rarr; Claude #3
-      (0.4600).
-      The inversion penalized Claude for having the <em>highest</em> schema validity.
-      See Bug Log below.
+      <strong>All three models are strong.</strong> The 0.0771 spread between first and third
+      (0.9514 → 0.8743) shows genuine differentiation, not a failure. Claude leads on all three
+      individual metrics; Gemini and Qwen are within 0.02 of each other on schema and cultural score.
     </div>
 
     <h2>Cross-Model Summary</h2>
@@ -502,40 +501,46 @@
       </thead>
       <tbody>
         <tr>
-          <td><strong>Composite (corrected)</strong></td>
-          <td class="hi"><strong>0.7055</strong></td>
-          <td>0.6849</td>
-          <td class="mid">0.6583</td>
+          <td><strong>Composite (absolute)</strong></td>
+          <td class="hi"><strong>0.9514</strong></td>
+          <td>0.8918</td>
+          <td class="lo">0.8743</td>
         </tr>
         <tr>
           <td>Schema validity (avg)</td>
-          <td class="hi">0.9886</td>
-          <td class="mid">0.9350</td>
-          <td class="lo">0.9149</td>
+          <td class="hi">0.9945</td>
+          <td class="mid">0.9341</td>
+          <td class="lo">0.9340</td>
         </tr>
         <tr>
           <td>Loanword preservation (avg)</td>
-          <td>0.8859</td>
-          <td class="hi">0.8882</td>
-          <td class="lo">0.8352</td>
+          <td class="hi">0.8854</td>
+          <td class="mid">0.8733</td>
+          <td class="lo">0.8233</td>
+        </tr>
+        <tr>
+          <td>Cultural subtlety (1–5, judge)</td>
+          <td class="hi">4.88</td>
+          <td class="mid">4.25</td>
+          <td class="mid">4.25</td>
         </tr>
         <tr>
           <td>Schema &mdash; EN scenarios</td>
-          <td class="hi">1.0000</td>
-          <td class="mid">0.9164</td>
-          <td class="lo">0.8473</td>
+          <td class="hi">0.9952</td>
+          <td class="mid">0.9058</td>
+          <td class="lo">0.8797</td>
         </tr>
         <tr>
           <td>Schema &mdash; KO scenarios</td>
-          <td class="mid">0.9773</td>
-          <td class="mid">0.9536</td>
-          <td class="hi">0.9826</td>
+          <td class="hi">0.9938</td>
+          <td class="mid">0.9624</td>
+          <td class="hi">0.9884</td>
         </tr>
         <tr>
           <td>Loanword &mdash; EN scenarios</td>
-          <td class="mid">0.7719</td>
-          <td class="mid">0.7764</td>
-          <td class="lo">0.6704</td>
+          <td class="mid">0.7709</td>
+          <td class="mid">0.7465</td>
+          <td class="lo">0.6466</td>
         </tr>
         <tr>
           <td>Loanword &mdash; KO scenarios</td>
@@ -544,10 +549,10 @@
           <td class="hi">1.0000</td>
         </tr>
         <tr>
-          <td>Noise delta (schema Δ clean&rarr;noisy)</td>
-          <td class="mid">&minus;0.0227</td>
-          <td class="hi">&minus;0.0122</td>
-          <td class="hi">+0.0058</td>
+          <td>Noise delta (schema clean&rarr;noisy)</td>
+          <td class="lo">&minus;0.0111</td>
+          <td class="hi">+0.0271</td>
+          <td class="hi">+0.0324</td>
         </tr>
       </tbody>
     </table>
@@ -556,19 +561,19 @@
 
     <div class="metric-grid">
       <div class="metric-box">
-        <div class="val hi">0.9886</div>
+        <div class="val hi">0.9945</div>
         <div class="lbl">Avg schema validity</div>
       </div>
       <div class="metric-box">
-        <div class="val">0.8859</div>
+        <div class="val">0.8854</div>
         <div class="lbl">Avg loanword pres.</div>
       </div>
       <div class="metric-box">
-        <div class="val">1.0000</div>
+        <div class="val">0.9952</div>
         <div class="lbl">Schema — EN</div>
       </div>
       <div class="metric-box">
-        <div class="val">0.9773</div>
+        <div class="val">0.9938</div>
         <div class="lbl">Schema — KO</div>
       </div>
     </div>
@@ -579,33 +584,34 @@
           <th>Scenario</th>
           <th>Schema</th>
           <th>Loanword</th>
-          <th>loanwords_detected</th>
+          <th>loanwords_detected note</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>en-a-clean</td>
           <td class="hi">1.0000</td>
-          <td class="mid">0.7379</td>
-          <td><code>세서미 오일</code> — Konglish form ✓</td>
+          <td class="mid">0.8155</td>
+          <td><code>세서미 오일</code> ✓ — valid Konglish form; <code>참기름</code> is more common in traditional Korean but
+            both are correct</td>
         </tr>
         <tr>
           <td>en-a-noise <span class="tag tag-noise">noisy</span></td>
-          <td class="hi">1.0000</td>
-          <td class="mid">0.8058</td>
-          <td><code>세서미 오일</code> ✓</td>
+          <td class="mid">0.9808</td>
+          <td class="mid">0.7767</td>
+          <td><code>세서미 오일</code> ✓ — same</td>
         </tr>
         <tr>
           <td>en-b-clean</td>
           <td class="hi">1.0000</td>
-          <td class="mid">0.7456</td>
-          <td><code>세서미 오일</code> ✓</td>
+          <td class="mid">0.7368</td>
+          <td><code>세서미 오일</code> ✓ — Konglish form; Gemini/Qwen used English "sesame oil"</td>
         </tr>
         <tr>
           <td>en-b-noise <span class="tag tag-noise">noisy</span></td>
           <td class="hi">1.0000</td>
-          <td class="mid">0.7982</td>
-          <td><code>세서미 오일</code> ✓</td>
+          <td class="mid">0.7544</td>
+          <td><code>세서미 오일</code> ✓ — same</td>
         </tr>
         <tr>
           <td>ko-a-clean <span class="tag tag-ko">ko</span></td>
@@ -615,7 +621,7 @@
         </tr>
         <tr>
           <td>ko-a-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td>
-          <td class="hi">1.0000</td>
+          <td class="mid">0.9750</td>
           <td class="hi">1.0000</td>
           <td><code>프라이팬</code> ✓</td>
         </tr>
@@ -627,15 +633,16 @@
         </tr>
         <tr>
           <td>ko-b-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td>
-          <td class="mid">0.9091</td>
           <td class="hi">1.0000</td>
-          <td><code>레시피</code> ✓ &mdash; 1 ingredient <code>quantity=null</code></td>
+          <td class="hi">1.0000</td>
+          <td><code>레시피</code> ✓</td>
         </tr>
         <tr class="avg-row">
           <td>Average</td>
-          <td>0.9886</td>
-          <td>0.8859</td>
-          <td>Consistent Konglish register across all scenarios</td>
+          <td>0.9945</td>
+          <td>0.8854</td>
+          <td>Consistently uses Konglish register: <code>세서미 오일</code> on EN, <code>프라이팬</code>/<code>레시피</code> on KO —
+            all valid forms</td>
         </tr>
       </tbody>
     </table>
@@ -644,19 +651,19 @@
 
     <div class="metric-grid">
       <div class="metric-box">
-        <div class="val mid">0.9350</div>
+        <div class="val mid">0.9341</div>
         <div class="lbl">Avg schema validity</div>
       </div>
       <div class="metric-box">
-        <div class="val hi">0.8882</div>
+        <div class="val mid">0.8733</div>
         <div class="lbl">Avg loanword pres.</div>
       </div>
       <div class="metric-box">
-        <div class="val mid">0.9164</div>
+        <div class="val mid">0.9058</div>
         <div class="lbl">Schema — EN</div>
       </div>
       <div class="metric-box">
-        <div class="val">0.9536</div>
+        <div class="val">0.9624</div>
         <div class="lbl">Schema — KO</div>
       </div>
     </div>
@@ -667,63 +674,63 @@
           <th>Scenario</th>
           <th>Schema</th>
           <th>Loanword</th>
-          <th>loanwords_detected</th>
+          <th>loanwords_detected note</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>en-a-clean</td>
-          <td class="hi">0.9592</td>
-          <td class="mid">0.8252</td>
+          <td class="mid">0.9623</td>
+          <td class="mid">0.8447</td>
           <td><code>sesame oil</code> — English form, not Konglish</td>
         </tr>
         <tr>
           <td>en-a-noise <span class="tag tag-noise">noisy</span></td>
-          <td class="hi">0.9565</td>
-          <td class="mid">0.8155</td>
-          <td>Empty — word present in recipe body text only</td>
+          <td class="mid">0.9565</td>
+          <td class="mid">0.7379</td>
+          <td>English forms; body text rescues loanword score</td>
         </tr>
         <tr>
           <td>en-b-clean</td>
-          <td class="mid">0.8864</td>
-          <td class="mid">0.7281</td>
+          <td class="lo">0.8182</td>
+          <td class="mid">0.7193</td>
           <td><code>sesame oil</code>, <code>recipe</code> — English forms</td>
         </tr>
         <tr>
           <td>en-b-noise <span class="tag tag-noise">noisy</span></td>
-          <td class="mid">0.8636</td>
-          <td class="mid">0.7368</td>
-          <td>Empty — word present in recipe body text only</td>
+          <td class="mid">0.8864</td>
+          <td class="mid">0.6842</td>
+          <td>English forms; some optional fields null</td>
         </tr>
         <tr>
           <td>ko-a-clean <span class="tag tag-ko">ko</span></td>
-          <td class="hi">1.0000</td>
+          <td class="mid">0.9750</td>
           <td class="hi">1.0000</td>
           <td><code>프라이팬</code> ✓</td>
         </tr>
         <tr>
           <td>ko-a-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td>
-          <td class="mid">0.9767</td>
+          <td class="mid">0.9722</td>
           <td class="hi">1.0000</td>
           <td><code>프라이팬</code> ✓</td>
         </tr>
         <tr>
           <td>ko-b-clean <span class="tag tag-ko">ko</span></td>
-          <td class="mid">0.9189</td>
+          <td class="mid">0.9268</td>
           <td class="hi">1.0000</td>
           <td><code>레시피</code> ✓</td>
         </tr>
         <tr>
           <td>ko-b-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td>
-          <td class="mid">0.9189</td>
+          <td class="mid">0.9756</td>
           <td class="hi">1.0000</td>
           <td><code>레시피</code> ✓</td>
         </tr>
         <tr class="avg-row">
           <td>Average</td>
-          <td>0.9350</td>
-          <td>0.8882</td>
-          <td>EN loanword form used; body text rescues score</td>
+          <td>0.9341</td>
+          <td>0.8733</td>
+          <td>EN loanword in English form; body text rescues score. KO perfect.</td>
         </tr>
       </tbody>
     </table>
@@ -732,19 +739,19 @@
 
     <div class="metric-grid">
       <div class="metric-box">
-        <div class="val lo">0.9149</div>
+        <div class="val lo">0.9340</div>
         <div class="lbl">Avg schema validity</div>
       </div>
       <div class="metric-box">
-        <div class="val mid">0.8352</div>
+        <div class="val lo">0.8233</div>
         <div class="lbl">Avg loanword pres.</div>
       </div>
       <div class="metric-box">
-        <div class="val lo">0.8473</div>
+        <div class="val lo">0.8797</div>
         <div class="lbl">Schema — EN</div>
       </div>
       <div class="metric-box">
-        <div class="val hi">0.9826</div>
+        <div class="val hi">0.9884</div>
         <div class="lbl">Schema — KO</div>
       </div>
     </div>
@@ -755,45 +762,46 @@
           <th>Scenario</th>
           <th>Schema</th>
           <th>Loanword</th>
-          <th>loanwords_detected</th>
+          <th>loanwords_detected note</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>en-a-clean</td>
           <td class="lo">0.8222</td>
-          <td class="mid">0.7282</td>
-          <td><code>sesame oil</code>, <code>soy sauce</code> — English forms</td>
+          <td class="mid">0.7087</td>
+          <td>English forms; optional fields sparse</td>
         </tr>
         <tr>
           <td>en-a-noise <span class="tag tag-noise">noisy</span></td>
-          <td class="lo">0.8222</td>
-          <td class="mid">0.6990</td>
-          <td>Same English forms; more null fields</td>
+          <td class="lo">0.8667</td>
+          <td class="mid">0.6408</td>
+          <td>English forms; more null fields vs. clean</td>
         </tr>
         <tr>
           <td>en-b-clean</td>
           <td class="lo">0.8723</td>
-          <td class="lo">0.6491</td>
-          <td>Over-detected: <code>미역국</code>, <code>miyeokguk</code>, <code>의미</code></td>
+          <td class="lo">0.5965</td>
+          <td>Over-detected: <code>미역국</code>, <code>miyeokguk</code>, <code>의미</code> — native terms, not loanwords
+          </td>
         </tr>
         <tr>
           <td>en-b-noise <span class="tag tag-noise">noisy</span></td>
-          <td class="lo">0.8723</td>
-          <td class="lo">0.6053</td>
+          <td class="mid">0.9574</td>
+          <td class="mid">0.6404</td>
           <td>Same over-detection pattern</td>
         </tr>
         <tr>
           <td>ko-a-clean <span class="tag tag-ko">ko</span></td>
-          <td class="mid">0.9535</td>
+          <td class="mid">0.9767</td>
           <td class="hi">1.0000</td>
-          <td>Empty — <code>프라이팬</code> in recipe body only</td>
+          <td><code>프라이팬</code> in recipe body ✓</td>
         </tr>
         <tr>
           <td>ko-a-noise <span class="tag tag-ko">ko</span><span class="tag tag-noise">noisy</span></td>
           <td class="mid">0.9767</td>
           <td class="hi">1.0000</td>
-          <td>Empty — <code>프라이팬</code> in recipe body only</td>
+          <td><code>프라이팬</code> ✓</td>
         </tr>
         <tr>
           <td>ko-b-clean <span class="tag tag-ko">ko</span></td>
@@ -809,9 +817,9 @@
         </tr>
         <tr class="avg-row">
           <td>Average</td>
-          <td>0.9149</td>
-          <td>0.8352</td>
-          <td>Inconsistent register; largest EN–KO gap</td>
+          <td>0.9340</td>
+          <td>0.8233</td>
+          <td>Largest EN–KO schema gap (0.109). EN-B over-detection hurts loanword score.</td>
         </tr>
       </tbody>
     </table>
@@ -828,42 +836,47 @@
       <tbody>
         <tr>
           <td><strong>Schema completeness</strong></td>
-          <td>Claude is the only model to achieve 1.000 on all EN scenarios. EN schema is harder — more optional fields
-            left null. KO schemas are consistently fuller across all models.</td>
+          <td>Claude leads on EN schema (0.9952 vs. 0.9058 Gemini, 0.8797 Qwen). KO schemas are competitive across all
+            models — EN is harder due to more optional fields being left null.</td>
         </tr>
         <tr>
           <td><strong>Loanword register</strong></td>
-          <td>Claude uses Korean-script Konglish forms (<code>세서미 오일</code>). Gemini and Qwen use English forms
-            (<code>sesame oil</code>). The scorer accepts both via body-text search, but the field intent is to preserve
-            the <em>Konglish</em> register specifically.</td>
+          <td>Claude consistently used <code>세서미 오일</code> (Konglish phonetic form) across all EN scenarios; Gemini and
+            Qwen used English "sesame oil". Both are valid — <code>참기름</code> is the more common traditional Korean
+            term, but <code>세서미 오일</code> is an accepted Konglish form in modern and Westernized Korean cooking. The
+            more interesting story is register consistency: Claude committed to Korean-script Konglish form even when
+            the source language was English. The loanword scorer gives equal credit for either form (body-text search);
+            a future sub-score for Korean-script preservation would better capture this distinction.</td>
         </tr>
         <tr>
           <td><strong>KO loanword unanimity</strong></td>
           <td>All models score 1.000 on KO loanword preservation. Korean-script loanwords (<code>프라이팬</code>,
-            <code>레시피</code>) are visually distinct and consistently present in output text, even when absent from
-            <code>loanwords_detected</code>.
+            <code>레시피</code>) are visually distinct and consistently captured.
           </td>
         </tr>
         <tr>
           <td><strong>Noise robustness</strong></td>
-          <td>Gemini shows the smallest schema degradation under noise (&Delta; &minus;0.012). Qwen marginally improves
-            on noisy KO (+0.006), likely due to extended-thinking engagement on ambiguous input.</td>
+          <td>Claude is the only model to degrade under noise (Δ &minus;0.011). Gemini (+0.027) and Qwen (+0.032)
+            marginally improve — likely because noisy variants trigger more conservative, complete schema fills rather
+            than creative embellishment of optional fields.</td>
+        </tr>
+        <tr>
+          <td><strong>Cultural score (judge active)</strong></td>
+          <td>Claude 4.88/5, Gemini and Qwen 4.25/5 — all models perform well. Claude's higher score reflects stronger
+            use of <code>hidden_intent</code> and more substantive <code>cultural_notes</code>. Judge model:
+            <code>claude-sonnet-4.6</code> — potential self-favoritism bias; consider a third-party judge for production
+            use.
+          </td>
         </tr>
         <tr>
           <td><strong>Qwen language gap</strong></td>
-          <td>Qwen's EN schema (0.847) is 0.135 below its KO schema (0.983) — the largest language gap. A KO-only
-            benchmark would significantly overstate Qwen's multilingual capability.</td>
-        </tr>
-        <tr>
-          <td><strong>Cultural score</strong></td>
-          <td>Stub at 0 for all models. Activating the judge LLM is the highest-leverage change for the next run;
-            qualitative reading of <code>hidden_intent</code> and <code>cultural_notes</code> in the CSVs suggests
-            Claude would lead this axis.</td>
+          <td>Qwen's EN schema (0.880) is 0.108 below its KO schema (0.988) — the largest language gap of the three
+            models. A KO-only benchmark would significantly overstate Qwen's multilingual capability.</td>
         </tr>
       </tbody>
     </table>
 
-    <h2>Bug Log — Metric Inversion in <code>src/benchmark.py</code></h2>
+    <h2>Bug Log — Metric Inversion in <code>src/benchmark.py</code> (Run 1, now patched)</h2>
 
     <div class="bug-log">
 
@@ -873,7 +886,7 @@
         <code class="em">avg_schema_validity</code> (higher-is-better) directly into the
         <code>"cer"</code> slot of <code>ModelRanker</code>:
       </p>
-      <pre># Bug — code that produced the original results.csv
+      <pre># Bug — code that produced the original results.csv (Run 1)
 "cer": self.avg_schema_validity,        # ← no inversion
 "wer": self.avg_cultural_score / 5.0,   # ← no inversion</pre>
 
@@ -885,13 +898,13 @@
 if lower_is_better:
     norm = 1.0 - norm   # lowest raw value → 1.0 (best rank)</pre>
 
-      <h3>Effect on each model</h3>
+      <h3>Effect on each model (Run 1)</h3>
       <pre>Schema validity inputs (raw, no inversion):
   Claude  = 0.9886  →  <span class="wrong">cer_norm = 0.000</span>  ← penalized for highest schema
   Gemini  = 0.9350  →  cer_norm = 0.273
   Qwen    = 0.9149  →  <span class="wrong">cer_norm = 1.000</span>  ← rewarded for lowest schema
 
-Cultural WER = 0.0 for all → wer_norm = 0.5 for all (tie; no differentiation)
+Cultural WER = 0.0 for all (judge stubbed) → wer_norm = 0.5 for all
 
 Loanword (correctly normalized, lower_is_better=False):
   Gemini  = 0.8882  →  loanword_norm = 1.000
@@ -903,22 +916,16 @@ Buggy composite (0.40·cer_norm + 0.25·wer_norm + 0.35·loanword_norm):
   <span class="wrong">Qwen    → 0.400 + 0.125 + 0.000 = 0.5250  rank 2</span>
   <span class="wrong">Claude  → 0.000 + 0.125 + 0.335 = 0.4600  rank 3</span></pre>
 
-      <h3>Correct formula (raw per-scenario CSV averages)</h3>
-      <pre>Correct composite = 0.40 × schema + 0.35 × loanword + 0.25 × cultural
-  <span class="correct">Claude  → 0.3954 + 0.3101 + 0 = 0.7055  rank 1</span>
-  <span class="correct">Gemini  → 0.3740 + 0.3109 + 0 = 0.6849  rank 2</span>
-  <span class="correct">Qwen    → 0.3660 + 0.2923 + 0 = 0.6583  rank 3</span></pre>
-
       <h3>Fix (current <code>src/benchmark.py</code>)</h3>
       <pre>"cer": 1.0 - self.avg_schema_validity,          # lower = more valid ✓
 "wer": 1.0 - (self.avg_cultural_score / 5.0),   # lower = higher judge score ✓
 "loanword_accuracy": self.avg_loanword_score,    # already higher-is-better ✓</pre>
 
-      <p>Run <code>python -m src.main</code> to regenerate <code>results.csv</code> with correct rankings.</p>
+      <p>Run 2 (this report) was generated after applying this fix with the judge active.</p>
 
     </div>
 
-    <h2>Metrics</h2>
+    <h2>Metrics Reference</h2>
 
     <table>
       <thead>
@@ -944,14 +951,14 @@ Buggy composite (0.40·cer_norm + 0.25·wer_norm + 0.35·loanword_norm):
         <tr>
           <td><strong>Cultural Subtlety</strong></td>
           <td>25%</td>
-          <td>LLM-as-Judge 1&ndash;5 scale. Stubbed at 0 for this run.
-            Set <code>judge_model</code> in <code>config.yaml</code> to activate.</td>
+          <td>LLM-as-Judge 1&ndash;5 scale. Judge: <code>anthropic/claude-sonnet-4.6</code>.
+            Set <code>judge_model</code> in <code>config.yaml</code> to change judge model.</td>
         </tr>
       </tbody>
     </table>
 
     <div class="footer">
-      Corrected Jun 13 2026 &bull; Korean Culinary Translation Benchmark v3.0.0 &bull;
+      Jun 13 2026 &bull; Korean Culinary Translation Benchmark v3.0.0 &bull;
       Models: anthropic/claude-sonnet-4.6 &middot; google/gemini-2.5-pro &middot; qwen/qwen3-max-thinking &bull;
       Raw data: <code>results/predictions/*.csv</code>
     </div>
