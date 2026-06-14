@@ -63,8 +63,18 @@ def run_full_benchmark(
         for name, result in raw_results.items()
     }
 
+    cost_data = {
+        name: {
+            "prompt_tokens": r.total_prompt_tokens,
+            "completion_tokens": r.total_completion_tokens,
+            "cost_usd": r.cost_usd,
+            "absolute_composite": r.absolute_composite,
+        }
+        for name, r in raw_results.items()
+    }
+
     reporter = BenchmarkReporter(output_dir)
-    reporter.generate_all_reports(ranked_df, top_models, metadata, per_model_samples)
+    reporter.generate_all_reports(ranked_df, top_models, metadata, per_model_samples, cost_data)
 
     exporter = PredictionExporter(str(Path(output_dir) / "predictions"))
     for model_name, result in raw_results.items():

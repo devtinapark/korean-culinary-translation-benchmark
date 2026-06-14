@@ -42,17 +42,27 @@ class BenchmarkResult:
     error: str | None = None
     per_scenario: list[ScenarioResult] = field(default_factory=list)
 
+    @property
+    def absolute_composite(self) -> float:
+        """Direct weighted average: 40% schema + 35% loanword + 25% cultural.
+        Cultural is normalized to 0–1 by dividing by 5.
+        Unlike ModelRanker's min-max output, this is comparable across runs."""
+        return (
+            0.40 * self.avg_schema_validity +
+            0.35 * self.avg_loanword_score +
+            0.25 * (self.avg_cultural_score / 5.0)
+        )
+
     def to_dict(self) -> dict:
-        # Maps new metric names to the keys ModelRanker expects (cer/wer/loanword_accuracy slots).
-        # cer slot   → schema validity (higher is better)
-        # wer slot   → cultural score  (higher is better, 0 when judge is stubbed)
-        # loanword   → loanword preservation
+        # Maps to ModelRanker slots (cer/wer/loanword_accuracy).
         # ModelRanker normalizes cer/wer with lower_is_better=True, so invert
-        # higher-is-better metrics before passing them in.
+        # higher-is-better metrics before passing them in. The ranker's composite_score
+        # output is relative (min-max); use absolute_composite for cross-run comparisons.
         return {
             "cer": 1.0 - self.avg_schema_validity,          # lower = more valid
             "wer": 1.0 - (self.avg_cultural_score / 5.0),   # lower = higher judge score
             "loanword_accuracy": self.avg_loanword_score,    # already higher-is-better ✓
+            "absolute_composite": self.absolute_composite,   # cross-run comparable score
             "samples_per_second": 1.0 / self.avg_latency if self.avg_latency > 0 else 0.0,
             "cer_wer_ratio": 0.0,
             "total_prompt_tokens": self.total_prompt_tokens,

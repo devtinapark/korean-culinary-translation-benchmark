@@ -82,18 +82,20 @@ class BenchmarkReporter:
             md.append("")
             md.append("| Metric | Value |")
             md.append("|--------|-------|")
-            md.append(f"| Composite Score | {row['composite_score']:.4f} |")
-            md.append(f"| Schema Validity / Completeness | {row['cer']:.4f} |")
-            md.append(f"| Cultural Subtlety Score (Judge) | {row['wer']:.4f} |")
+            schema_actual = 1.0 - row['cer']
+            cultural_actual = 5.0 * (1.0 - row['wer'])
+            abs_composite = (cost_data or {}).get(model_name, {}).get("absolute_composite")
+            md.append(f"| Composite Score (absolute, cross-run) | {abs_composite:.4f} |" if abs_composite is not None else "")
+            md.append(f"| Composite Score (normalized, this run) | {row['composite_score']:.4f} |")
+            md.append(f"| Schema Validity / Completeness | {schema_actual:.4f} |")
+            md.append(f"| Cultural Subtlety Score (Judge, 1–5) | {cultural_actual:.3f} |")
             md.append(f"| Loanword Preservation | {row['loanword_accuracy']:.4f} |")
 
             cost = (cost_data or {}).get(model_name)
             if cost:
-                md.append(f"| Audio Duration | {cost['audio_minutes']:.2f} min |")
-                md.append(f"| Price per Minute | ${cost['cost_per_minute']:.4f} |")
-                md.append(f"| Estimated Cost (this run) | ${cost['estimated_cost']:.6f} |")
-                md.append(f"| Avg Latency per Clip | {cost['avg_latency']:.2f}s |")
-                md.append(f"| Total Latency | {cost['total_latency']:.2f}s |")
+                md.append(f"| Prompt tokens | {cost['prompt_tokens']:,} |")
+                md.append(f"| Completion tokens | {cost['completion_tokens']:,} |")
+                md.append(f"| Estimated cost (this run) | ${cost['cost_usd']:.4f} |")
             md.append("")
 
             # Noise impact on schema validity
@@ -127,13 +129,17 @@ class BenchmarkReporter:
         # Full Rankings
         md.append("## Full Rankings")
         md.append("")
-        md.append("| Rank | Model | Score | Schema Validity | Cultural Score | Loanword Pres. |")
-        md.append("|------|-------|-------|----------------|---------------|----------------|")
+        md.append("| Rank | Model | Absolute Score | Schema Validity | Cultural (1–5) | Loanword Pres. |")
+        md.append("|------|-------|---------------|----------------|---------------|----------------|")
 
         for _, row in ranked_df.iterrows():
+            schema_actual = 1.0 - row['cer']
+            cultural_actual = 5.0 * (1.0 - row['wer'])
+            abs_composite = (cost_data or {}).get(row['model'], {}).get("absolute_composite")
+            abs_str = f"{abs_composite:.4f}" if abs_composite is not None else "—"
             md.append(
-                f"| {row['rank']} | {row['model']} | {row['composite_score']:.4f} | "
-                f"{row['cer']:.4f} | {row['wer']:.4f} | {row['loanword_accuracy']:.4f} |"
+                f"| {row['rank']} | {row['model']} | {abs_str} | "
+                f"{schema_actual:.4f} | {cultural_actual:.2f} | {row['loanword_accuracy']:.4f} |"
             )
 
         md.append("")
